@@ -1,8 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xml:lang="en">
     <head>
-        <meta charset="UTF-8" />
-        <title>Home</title>
+        <title>Live Server</title>
     </head>
-    <body></body>
+    <body>
+        <script type="module" src="js/main.js"></script>
+        <script src="https://apis.google.com/js/api.js"></script>
+        <div>
+            <select id="event_type_sel">
+                <option value="concert">🎶 Concert</option>
+                <option value="comedy">😀 Comedy</option>
+                <option value="other">Other</option>
+                <option value="custom">Custom</option>
+            </select>
+            <input id="event_name_input" type="text" />
+
+            <div>
+                <label for="event_dt">Event time and date</label>
+                <input type="datetime-local" id="event_dt" />
+            </div>
+
+            <div>
+                <label for="event_url">Participants</label>
+                <input type="number" id="participants_ipt" />
+            </div>
+        </div>
+
+        <div>
+            <div>
+                <input type="checkbox" id="no_purchase_task" />
+                <label for="no_purchase_task">
+                    Don't create a task to purchase tickets
+                </label>
+            </div>
+
+            <label for="ticket_dt">Ticket sale opens</label>
+            <input type="datetime-local" id="ticket_dt" />
+        </div>
+        <div>
+            <button id="add_btn">Add to Calendar</button>
+        </div>
+    </body>
 </html>
