@@ -8,6 +8,22 @@
             defer
         ></script>
     </head>
+
+    <body>
+        <script>
+            const client = google.accounts.oauth2.initTokenClient({
+                client_id:
+                    "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com",
+                scope: "https://www.googleapis.com/auth/calendar.readonly",
+                callback: (response) => {
+                    console.log(response);
+                },
+            });
+        </script>
+    </body>
+    <!-- <head>
+
+    </head>
     <body>
         <script>
             var client;
@@ -26,9 +42,9 @@
                 // Request authorization code and obtain user consent
                 client.requestCode();
             }
-        </script>
+        </script> -->
 
-        <!-- 
+    <!-- 
 
         <script>
             var client;
@@ -67,11 +83,11 @@
                 client.requestCode();
             }
         </script> -->
-        <button onclick="getAuthCode();">Load Your Calendar</button>
+    <!-- <button onclick="getAuthCode();">Load Your Calendar</button>
     </body>
-</html>
+</html> -->
 
-<!--html lang="en" xml:lang="en">
+    <!--html lang="en" xml:lang="en">
     <head>
         <title>Live Server</title>
     </head>
@@ -119,3 +135,4 @@
         </div>
     </body>
 </html-->
+</html>
