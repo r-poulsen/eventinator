@@ -23,7 +23,8 @@ function oauthSignIn() {
     var params = {
         client_id:
             "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com",
-        redirect_uri: "https://r-poulsen.github.io/oath2redirect",
+        // redirect_uri: "https://r-poulsen.github.io/oath2redirect",
+        redirect_uri: "http://localhost:5500/oauth2redirect.html",
         response_type: "token",
         scope: "https://www.googleapis.com/auth/drive.metadata.readonly",
         include_granted_scopes: "true",
