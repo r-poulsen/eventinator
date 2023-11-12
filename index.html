@@ -19,6 +19,11 @@
                         gapi.client.load("calendar", "v3", function () {
                             // Do something after client loaded.
                             console.log("client loaded");
+                            console.log(
+                                gapi.client.calendar.calendarList
+                                    .list()
+                                    .execute()
+                            );
                         });
 
                         // console.log(gapi.client);
