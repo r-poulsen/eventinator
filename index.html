@@ -15,7 +15,9 @@
                 callback: (response) => {
                     console.log(response);
                     gapi.load("client", function () {
+                        console.log(gapi.auth2.getAuthInstance());
                         gapi.client.setToken(response.access_token);
+                        console.log(gapi.auth2.getAuthInstance());
                         gapi.client.load("calendar", "v3", function () {
                             // Do something after client loaded.
                             console.log("client loaded");
