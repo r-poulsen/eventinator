@@ -25,19 +25,25 @@ limitations under the License.
     <body>
         <p>Google Calendar API Quickstart</p>
 
-        <!--Add buttons to initiate auth sequence and sign out-->
-        <button id="authorize_button" onclick="handleAuthClick()">
-            Authorize
-        </button>
-        <button id="signout_button" onclick="handleSignoutClick()">
-            Sign Out
-        </button>
+        <div>
+            <!--Add buttons to initiate auth sequence and sign out-->
+            <button id="authorize_button" onclick="handleAuthClick()">
+                Authorize
+            </button>
+            <button id="signout_button" onclick="handleSignoutClick()">
+                Sign Out
+            </button>
+        </div>
 
-        <label for="ticket_calendar_select">Ticket Calendar</label>
-        <select id="ticket_calendar_select"></select>
+        <div>
+            <label for="ticket_calendar_select">Ticket Calendar</label>
+            <select id="ticket_calendar_select"></select>
+        </div>
 
-        <label for="event_calendar_select">Event Calendar</label>
-        <select id="event_calendar_select"></select>
+        <div>
+            <label for="event_calendar_select">Event Calendar</label>
+            <select id="event_calendar_select"></select>
+        </div>
 
         <pre id="content" style="white-space: pre-wrap"></pre>
 
