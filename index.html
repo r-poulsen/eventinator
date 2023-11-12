@@ -120,7 +120,7 @@ limitations under the License.
                         "visible";
                     document.getElementById("authorize_button").innerText =
                         "Refresh";
-                    await addCalendarEntry();
+                    await listCalendars();
                 };
 
                 if (gapi.client.getToken() === null) {
