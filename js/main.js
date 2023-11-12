@@ -47,4 +47,31 @@ function oauthSignIn() {
 
 if (!localStorage.getItem("access_token")) {
     oauthSignIn();
+} else {
+    gapi.client.calendar.events
+        .insert({
+            calendarId: "primary", // Use 'primary' for the default calendar
+            resource: {
+                summary: "Event Title",
+                description: "Event Description",
+                start: {
+                    dateTime: "2023-11-12T10:00:00",
+                    timeZone: "UTC",
+                },
+                end: {
+                    dateTime: "2023-11-12T12:00:00",
+                    timeZone: "UTC",
+                },
+            },
+        })
+        .then(
+            function (response) {
+                console.log("Event created: " + response.result.htmlLink);
+            },
+            function (error) {
+                console.error(
+                    "Error creating event: " + error.result.error.message
+                );
+            }
+        );
 }
