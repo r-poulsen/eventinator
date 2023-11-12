@@ -162,7 +162,7 @@ limitations under the License.
                 const response = await gapi.client.calendar.calendarList.list();
 
                 const ticketElement = document.getElementById(
-                    "event_calendar_select"
+                    "ticket_calendar_select"
                 );
 
                 const eventElement = document.getElementById(
@@ -175,7 +175,7 @@ limitations under the License.
                         optionElement.value = calendar.id;
                         optionElement.text = calendar.summary;
 
-                        //eventElement.add(optionElement);
+                        eventElement.add(optionElement);
                         ticketElement.add(optionElement.cloneNode(true));
                     }
                 });
