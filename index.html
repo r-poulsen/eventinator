@@ -1,5 +1,56 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en">
+<html>
+    <head>
+        <script
+            src="https://accounts.google.com/gsi/client"
+            onload="initClient()"
+            async
+            defer
+        ></script>
+    </head>
+    <body>
+        <script>
+            var client;
+            function initClient() {
+                client = google.accounts.oauth2.initCodeClient({
+                    client_id:
+                        "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com",
+                    scope: "https://www.googleapis.com/auth/calendar.readonly",
+                    ux_mode: "popup",
+                    callback: (response) => {
+                        var code_receiver_uri =
+                            "https://r-poulsen.github.io/eventinator/oauth2redirect.html";
+                        // Send auth code to your backend platform
+                        const xhr = new XMLHttpRequest();
+                        xhr.open("POST", code_receiver_uri, true);
+                        xhr.setRequestHeader(
+                            "Content-Type",
+                            "application/x-www-form-urlencoded"
+                        );
+                        xhr.setRequestHeader(
+                            "X-Requested-With",
+                            "XMLHttpRequest"
+                        );
+                        xhr.onload = function () {
+                            console.log("Signed in as: " + xhr.responseText);
+                        };
+                        xhr.send("code=" + response.code);
+                        // After receipt, the code is exchanged for an access token and
+                        // refresh token, and the platform then updates this web app
+                        // running in user's browser with the requested calendar info.
+                    },
+                });
+            }
+            function getAuthCode() {
+                // Request authorization code and obtain user consent
+                client.requestCode();
+            }
+        </script>
+        <button onclick="getAuthCode();">Load Your Calendar</button>
+    </body>
+</html>
+
+<!--html lang="en" xml:lang="en">
     <head>
         <title>Live Server</title>
     </head>
@@ -46,4 +97,4 @@
             <button id="add_btn">Add to Calendar</button>
         </div>
     </body>
-</html>
+</html-->
