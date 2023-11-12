@@ -7,14 +7,16 @@
     <h1>Authentification Redirect</h1>
     <p>Redirecting...</p>
     <script>
-        // Parse the URL
-        const urlParams = new URLSearchParams(window.location.search);
+        // Parse the URL fragment
+        const fragment = new URLSearchParams(window.location.hash.slice(1));
 
-        // Get the access_token parameter
-        const accessToken = urlParams.get("access_token");
+        // Get the access_token and expires_in parameters
+        const accessToken = fragment.get("access_token");
+        const expiresIn = fragment.get("expires_in");
 
-        // Save the access_token in localStorage
+        // Save the access_token and expires_in in localStorage
         localStorage.setItem("access_token", accessToken);
+        localStorage.setItem("expires_in", expiresIn);
 
         // Redirect to https://test.dk
         // window.location.href = "https://r-poulsen.github.io/eventinator/";
