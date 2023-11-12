@@ -149,6 +149,14 @@ limitations under the License.
                 }
             }
 
+            async function listCalendars() {
+                const response = await gapi.client.calendar.calendarList.list();
+                console.log(response);
+            }
+
+            /**
+             * Add a calendar entry using the Google Calendar API.
+             */
             async function addCalendarEntry() {
                 const event = {
                     summary: "Google I/O 2015",
