@@ -171,7 +171,8 @@ limitations under the License.
                 });
 
                 request.execute((event) => {
-                    appendPre("Event created: " + event.htmlLink);
+                    document.getElementById("content").innerText =
+                        "Event created: " + event.htmlLink;
                 });
             }
 
