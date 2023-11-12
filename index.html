@@ -21,7 +21,12 @@
                             console.log("client loaded");
                             console.log(
                                 gapi.client.calendar.calendarList
-                                    .list()
+                                    .list({
+                                        auth: gapi.auth2
+                                            .getAuthInstance()
+                                            .currentUser.get()
+                                            .getAuthResponse().access_token,
+                                    })
                                     .execute()
                             );
                         });
