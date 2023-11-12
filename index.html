@@ -11,14 +11,19 @@
                 client_id:
                     "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com",
                 scope: "https://www.googleapis.com/auth/calendar.readonly",
+                prompt: "select_account",
                 callback: (response) => {
-                    gapi.load("client", function () {
+                    console.log(response);
+                    gapi.load("client", function (response) {
+                        console.log(response);
+
                         gapi.client.init({});
+
+                        console.log(gapi.client);
+
                         console.log("OK");
                     });
                 },
-
-                prompt: "select_account",
             });
         </script>
 
