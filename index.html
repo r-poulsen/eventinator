@@ -33,15 +33,12 @@ limitations under the License.
             Sign Out
         </button>
 
+        <select id="ticket_calendar_select"></select>
+        <select id="event_calendar_select"></select>
+
         <pre id="content" style="white-space: pre-wrap"></pre>
 
         <script type="text/javascript">
-            /* exported gapiLoaded */
-            /* exported gisLoaded */
-            /* exported handleAuthClick */
-            /* exported handleSignoutClick */
-
-            // TODO(developer): Set to client ID and API key from the Developer Console
             const CLIENT_ID =
                 "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com";
             //const API_KEY = "<YOUR_API_KEY>";
@@ -154,11 +151,20 @@ limitations under the License.
              */
             async function listCalendars() {
                 const response = await gapi.client.calendar.calendarList.list();
+                const ticketElement = document.getElementById(
+                    "ticket_calendar_select"
+                );
+                const eventElement = document.getElementById(
+                    "event_calendar_select"
+                );
+
                 response.result.items.forEach((calendar) => {
                     if (calendar.accessRole !== "reader") {
-                        console.log(
-                            `Calendar ID: ${calendar.id}, Name: ${calendar.summary}`
-                        );
+                        const optionElement = document.createElement("option");
+                        optionElement.value = calendar.id;
+                        optionElement.text = calendar.summary;
+                        ticketElement.add(optionElement);
+                        eventElement.add(optionElement);
                     }
                 });
             }
