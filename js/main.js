@@ -48,30 +48,51 @@ function oauthSignIn() {
 if (!localStorage.getItem("access_token")) {
     oauthSignIn();
 } else {
-    gapi.client.calendar.events
-        .insert({
-            calendarId: "primary", // Use 'primary' for the default calendar
-            resource: {
-                summary: "Event Title",
-                description: "Event Description",
-                start: {
-                    dateTime: "2023-11-12T10:00:00",
-                    timeZone: "UTC",
-                },
-                end: {
-                    dateTime: "2023-11-12T12:00:00",
-                    timeZone: "UTC",
-                },
-            },
+    gapi.load("client", initClient);
+}
+
+function initClient() {
+    gapi.client
+        .init({
+            apiKey: "YOUR_API_KEY", // Your API Key
+            clientId: "YOUR_CLIENT_ID", // Your OAuth Client ID
+            discoveryDocs: [
+                "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
+            ],
+            scope: "https://www.googleapis.com/auth/calendar.events",
         })
-        .then(
-            function (response) {
-                console.log("Event created: " + response.result.htmlLink);
-            },
-            function (error) {
-                console.error(
-                    "Error creating event: " + error.result.error.message
+        .then(function () {
+            // Handle the client initialization
+            // Call functions here to interact with the API
+
+            gapi.client.calendar.events
+                .insert({
+                    calendarId: "primary", // Use 'primary' for the default calendar
+                    resource: {
+                        summary: "Event Title",
+                        description: "Event Description",
+                        start: {
+                            dateTime: "2023-11-12T10:00:00",
+                            timeZone: "UTC",
+                        },
+                        end: {
+                            dateTime: "2023-11-12T12:00:00",
+                            timeZone: "UTC",
+                        },
+                    },
+                })
+                .then(
+                    function (response) {
+                        console.log(
+                            "Event created: " + response.result.htmlLink
+                        );
+                    },
+                    function (error) {
+                        console.error(
+                            "Error creating event: " +
+                                error.result.error.message
+                        );
+                    }
                 );
-            }
-        );
+        });
 }
