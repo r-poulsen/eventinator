@@ -155,9 +155,11 @@ limitations under the License.
             async function listCalendars() {
                 const response = await gapi.client.calendar.calendarList.list();
                 response.result.items.forEach((calendar) => {
-                    console.log(
-                        `Calendar ID: ${calendar.id}, Name: ${calendar.summary}`
-                    );
+                    if (calendar.accessRole !== "reader") {
+                        console.log(
+                            `Calendar ID: ${calendar.id}, Name: ${calendar.summary}`
+                        );
+                    }
                 });
             }
 
