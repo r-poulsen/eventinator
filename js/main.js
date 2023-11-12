@@ -1,11 +1,11 @@
-class EventinatorApp {
-    constructor() {
-        console.log("EventinatorApp constructor");
-    }
-}
+// class EventinatorApp {
+//     constructor() {
+//         console.log("EventinatorApp constructor");
+//     }
+// }
 
-console.log("main.js loaded");
-let ea = new EventinatorApp();
+// console.log("main.js loaded");
+// let ea = new EventinatorApp();
 
 /*
  * Create form to request access token from Google's OAuth 2.0 server.
@@ -43,3 +43,5 @@ function oauthSignIn() {
     document.body.appendChild(form);
     form.submit();
 }
+
+oauthSignIn();
