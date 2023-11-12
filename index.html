@@ -22,10 +22,7 @@
                             console.log(
                                 gapi.client.calendar.calendarList
                                     .list({
-                                        auth: gapi.auth2
-                                            .getAuthInstance()
-                                            .currentUser.get()
-                                            .getAuthResponse().access_token,
+                                        auth: response.access_token,
                                     })
                                     .execute()
                             );
