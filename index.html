@@ -149,9 +149,16 @@ limitations under the License.
                 }
             }
 
+            /**
+             * List calendars using the Google Calendar API.
+             */
             async function listCalendars() {
                 const response = await gapi.client.calendar.calendarList.list();
-                console.log(response);
+                response.result.items.forEach((calendar) => {
+                    console.log(
+                        `Calendar ID: ${calendar.id}, Name: ${calendar.summary}`
+                    );
+                });
             }
 
             /**
