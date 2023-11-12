@@ -45,4 +45,6 @@ function oauthSignIn() {
     form.submit();
 }
 
-oauthSignIn();
+if (!localStorage.getItem("access_token")) {
+    oauthSignIn();
+}
