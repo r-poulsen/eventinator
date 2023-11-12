@@ -12,8 +12,11 @@
                     "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com",
                 scope: "https://www.googleapis.com/auth/calendar.readonly",
                 callback: (response) => {
-                    console.log(response);
+                    gapi.load("client", function () {
+                        gapi.client.init({});
+                    });
                 },
+
                 prompt: "",
             });
         </script>
