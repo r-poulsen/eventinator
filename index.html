@@ -14,14 +14,16 @@
                 prompt: "select_account",
                 callback: (response) => {
                     console.log(response);
-                    gapi.load("client", function (response) {
-                        console.log(response);
+                    gapi.load("client", function () {
+                        gapi.client.setToken(response.access_token);
+                        gapi.client.load("calendar", "v3", function () {
+                            // Do something after client loaded.
+                            console.log("client loaded");
+                        });
 
-                        gapi.client.init({});
+                        // console.log(gapi.client);
 
-                        console.log(gapi.client);
-
-                        console.log("OK");
+                        // console.log("OK");
                     });
                 },
             });
