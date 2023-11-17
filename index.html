@@ -1,235 +1,141 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <script src="/js/main.js"></script>
         <script src="https://accounts.google.com/gsi/client"></script>
         <script src="https://apis.google.com/js/api.js"></script>
+        <link rel="stylesheet" href="style.css" />
     </head>
 
     <body>
-        <div>
+        <div id="authorize">
+            <p>
+                Before using the application, you must authorize access to your
+                calendar and documents.
+            </p>
             <button id="authorize_button" onclick="handleAuthClick()">
                 Authorize
             </button>
-            <button id="signout_button" onclick="handleSignoutClick()">
-                Sign Out
-            </button>
         </div>
 
-        <div>
-            <label for="ticket_calendar_select">Ticket Calendar</label>
-            <select id="ticket_calendar_select"></select>
+        <div id="main">
+            <fieldset>
+                <legend>Options</legend>
+                <span class="options">
+                    <input type="checkbox" id="purchase_reminder" checked />
+                    <label for="purchase_reminder">
+                        Remind me to purchase tickets</label
+                    ><span id="ticket_calendar"
+                        >; <label for="ticket_calendar_select">Calendar</label>
+                        <select id="ticket_calendar_select"></select>
+                    </span>
+                </span>
+
+                <span class="options">
+                    <input type="checkbox" id="calendar_entry" checked />
+                    <label for="calendar_entry">
+                        Create a calendar entry for the event</label
+                    ><span id="event_calendar"
+                        >; <label for="event_calendar_select">Calendar</label>
+                        <select id="event_calendar_select"></select
+                    ></span>
+                </span>
+
+                <span class="options">
+                    <input type="checkbox" id="update_doc" checked />
+                    <label for="update_doc">
+                        Update a Google document with the event details
+                    </label>
+                </span>
+            </fieldset>
+
+            <fieldset id="event">
+                <legend>Event</legend>
+
+                <span id="event_title">
+                    <label for="event_type_sel">Type</label>
+                    <select id="event_type_sel">
+                        <option value="concert">🎶 Concert</option>
+                        <option value="movie">🎥 Movie</option>
+                        <option value="comedy">😀 Comedy</option>
+                        <option value="sports">🏈 Sports</option>
+                        <option value="theater">🎭 Theater</option>
+                        <option value="festival">🎉 Festival</option>
+                        <option value="other">🎫 Other</option>
+                    </select>
+                </span>
+
+                <span>
+                    <label for="event_name_input">Name</label>
+                    <input
+                        id="event_name_input"
+                        type="text"
+                        placeholder="Event name"
+                    />
+                </span>
+
+                <span>
+                    <div id="Participants"></div>
+                </span>
+            </fieldset>
+
+            <fieldset id="ticket">
+                <legend>Ticket sale</legend>
+                <span>
+                    <label for="ticket_dt">Start</label>
+                    <input type="datetime-local" id="ticket_dt" />
+
+                    <label for="ticket_url">URL</label>
+                    <input type="url" id="ticket_url" />
+
+                    <label for="ticket_notes">Notes</label>
+                    <input type="url" id="ticket_notes" />
+                </span>
+            </fieldset>
+
+            <fieldset id="event_time">
+                <span>
+                    <label for="location">Location</label>
+                    <input id="location" />
+                </span>
+                <legend>Event Time and Place</legend>
+                <span>
+                    <label for="event_dt">Start</label>
+                    <input type="datetime-local" id="event_dt" />
+                </span>
+
+                <span id="duration_hours_elements"
+                    ><label for="event_duration_hours">Duration, hours</label>
+                    <input
+                        type="number"
+                        id="event_duration_hours"
+                        min="1"
+                        value="3"
+                    />
+                </span>
+                <span id="duration_days_elements" style="display: none"
+                    ><label for="event_duration_days">Duration, days</label>
+                    <input
+                        type="number"
+                        id="event_duration_days"
+                        min="1"
+                        value="3"
+                    />
+                </span>
+                <div>
+                    <input
+                        type="checkbox"
+                        id="all_day"
+                        onchange="toggleDurationInputs()"
+                    />
+                    <label for="all_day"> All day event </label>
+                </div>
+            </fieldset>
+            <div id="add_container">
+                <button id="add_btn">Add to Calendar(s)</button>
+            </div>
         </div>
 
-        <div>
-            <label for="event_calendar_select">Event Calendar</label>
-            <select id="event_calendar_select"></select>
-        </div>
-
-        <pre id="content" style="white-space: pre-wrap"></pre>
-
-        <script type="text/javascript">
-            const CLIENT_ID =
-                "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com";
-            //const API_KEY = "<YOUR_API_KEY>";
-
-            // Discovery doc URL for APIs used by the quickstart
-            const DISCOVERY_DOC =
-                "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest";
-
-            // Authorization scopes required by the API; multiple scopes can be
-            // included, separated by spaces.
-            const SCOPES =
-                "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events.owned";
-
-            let tokenClient;
-            let gapiInited = false;
-            let gisInited = false;
-
-            document.getElementById("authorize_button").style.visibility =
-                "hidden";
-            document.getElementById("signout_button").style.visibility =
-                "hidden";
-
-            /**
-             * Callback after api.js is loaded.
-             */
-            function gapiLoaded() {
-                gapi.load("client", initializeGapiClient);
-            }
-
-            /**
-             * Callback after the API client is loaded. Loads the
-             * discovery doc to initialize the API.
-             */
-            async function initializeGapiClient() {
-                await gapi.client.init({
-                    //apiKey: API_KEY,
-                    discoveryDocs: [DISCOVERY_DOC],
-                });
-                gapiInited = true;
-                maybeEnableButtons();
-            }
-
-            /**
-             * Callback after Google Identity Services are loaded.
-             */
-            function gisLoaded() {
-                tokenClient = google.accounts.oauth2.initTokenClient({
-                    client_id: CLIENT_ID,
-                    scope: SCOPES,
-                    callback: "", // defined later
-                });
-                gisInited = true;
-                maybeEnableButtons();
-            }
-
-            /**
-             * Enables user interaction after all libraries are loaded.
-             */
-            function maybeEnableButtons() {
-                if (gapiInited && gisInited) {
-                    document.getElementById(
-                        "authorize_button"
-                    ).style.visibility = "visible";
-                }
-            }
-
-            /**
-             *  Sign in the user upon button click.
-             */
-            function handleAuthClick() {
-                tokenClient.callback = async (resp) => {
-                    if (resp.error !== undefined) {
-                        throw resp;
-                    }
-                    document.getElementById("signout_button").style.visibility =
-                        "visible";
-                    document.getElementById("authorize_button").innerText =
-                        "Refresh";
-                    await listCalendars();
-                };
-
-                if (gapi.client.getToken() === null) {
-                    // Prompt the user to select a Google Account and ask for consent to share their data
-                    // when establishing a new session.
-                    tokenClient.requestAccessToken({ prompt: "consent" });
-                } else {
-                    // Skip display of account chooser and consent dialog for an existing session.
-                    tokenClient.requestAccessToken({ prompt: "" });
-                }
-            }
-
-            /**
-             *  Sign out the user upon button click.
-             */
-            function handleSignoutClick() {
-                const token = gapi.client.getToken();
-                if (token !== null) {
-                    google.accounts.oauth2.revoke(token.access_token);
-                    gapi.client.setToken("");
-                    document.getElementById("content").innerText = "";
-                    document.getElementById("authorize_button").innerText =
-                        "Authorize";
-                    document.getElementById("signout_button").style.visibility =
-                        "hidden";
-                }
-            }
-
-            /**
-             * List calendars using the Google Calendar API.
-             */
-            async function listCalendars() {
-                const response = await gapi.client.calendar.calendarList.list();
-
-                const ticketElement = document.getElementById(
-                    "ticket_calendar_select"
-                );
-
-                const eventElement = document.getElementById(
-                    "event_calendar_select"
-                );
-
-                response.result.items.forEach((calendar) => {
-                    if (calendar.accessRole !== "reader") {
-                        const optionElement = document.createElement("option");
-                        optionElement.value = calendar.id;
-                        optionElement.text = calendar.summary;
-
-                        eventElement.add(optionElement);
-                        ticketElement.add(optionElement.cloneNode(true));
-                    }
-                });
-            }
-
-            /**
-             * Add a calendar entry using the Google Calendar API.
-             */
-            async function addCalendarEntry() {
-                const event = {
-                    summary: "Google I/O 2015",
-                    location: "800 Howard St., San Francisco, CA 94103",
-                    description:
-                        "A chance to hear more about Google's developer products.",
-                    start: {
-                        dateTime: "2023-12-01T09:00:00-07:00",
-                        timeZone: "America/Los_Angeles",
-                    },
-                    end: {
-                        dateTime: "2023-12-01T17:00:00-07:00",
-                        timeZone: "America/Los_Angeles",
-                    },
-                };
-
-                const request = gapi.client.calendar.events.insert({
-                    calendarId: "primary",
-                    resource: event,
-                });
-
-                request.execute((event) => {
-                    document.getElementById("content").innerText =
-                        "Event created: " + event.htmlLink;
-                });
-            }
-
-            /**
-             * Print the summary and start datetime/date of the next ten events in
-             * the authorized user's calendar. If no events are found an
-             * appropriate message is printed.
-             */
-            async function listUpcomingEvents() {
-                let response;
-                try {
-                    const request = {
-                        calendarId: "primary",
-                        timeMin: new Date().toISOString(),
-                        showDeleted: false,
-                        singleEvents: true,
-                        maxResults: 10,
-                        orderBy: "startTime",
-                    };
-                    response = await gapi.client.calendar.events.list(request);
-                } catch (err) {
-                    document.getElementById("content").innerText = err.message;
-                    return;
-                }
-
-                const events = response.result.items;
-                if (!events || events.length == 0) {
-                    document.getElementById("content").innerText =
-                        "No events found.";
-                    return;
-                }
-                // Flatten to string to display
-                const output = events.reduce(
-                    (str, event) =>
-                        `${str}${event.summary} (${
-                            event.start.dateTime || event.start.date
-                        })\n`,
-                    "Events:\n"
-                );
-                document.getElementById("content").innerText = output;
-            }
-        </script>
         <script
             async
             defer
@@ -243,156 +149,4 @@
             onload="gisLoaded()"
         ></script>
     </body>
-
-    <!-- [END calendar_quickstart] -->
-
-    <!-- <body>
-        <script>
-            const client = google.accounts.oauth2.initTokenClient({
-                client_id:
-                    "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com",
-                scope: "https://www.googleapis.com/auth/calendar.readonly",
-                prompt: "select_account",
-                callback: (response) => {
-                    console.log(response);
-                    gapi.load("client", function () {
-                        
-                        gapi.client.setToken(response.access_token);
-                        
-                        gapi.client.load("calendar", "v3", function () {
-                            // Do something after client loaded.
-                            console.log("client loaded");
-                            console.log(
-                                gapi.client.calendar.calendarList
-                                    .list({
-                                        auth: response.access_token,
-                                    })
-                                    .execute()
-                            );
-                        });
-
-                        // console.log(gapi.client);
-
-                        // console.log("OK");
-                    });
-                },
-            });
-        </script>
-
-        <button onclick="client.requestAccessToken();">Authorize me</button>
-    </body> -->
-    <!-- <head>
-
-    </head>
-    <body>
-        <script>
-            var client;
-            function initClient() {
-                client = google.accounts.oauth2.initCodeClient({
-                    client_id:
-                        "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com",
-                    scope: "https://www.googleapis.com/auth/calendar.readonly",
-                    ux_mode: "redirect",
-                    redirect_uri:
-                        "https://r-poulsen.github.io/eventinator/oauth2redirect.html",
-                });
-            }
-            // Request an access token
-            function getAuthCode() {
-                // Request authorization code and obtain user consent
-                client.requestCode();
-            }
-        </script> -->
-
-    <!-- 
-
-        <script>
-            var client;
-            function initClient() {
-                client = google.accounts.oauth2.initCodeClient({
-                    client_id:
-                        "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com",
-                    scope: "https://www.googleapis.com/auth/calendar.readonly",
-                    ux_mode: "popup",
-                    callback: (response) => {
-                        var code_receiver_uri =
-                            "https://r-poulsen.github.io/eventinator/oauth2redirect.html";
-                        // Send auth code to your backend platform
-                        const xhr = new XMLHttpRequest();
-                        xhr.open("GET", code_receiver_uri, true);
-                        xhr.setRequestHeader(
-                            "Content-Type",
-                            "application/x-www-form-urlencoded"
-                        );
-                        xhr.setRequestHeader(
-                            "X-Requested-With",
-                            "XMLHttpRequest"
-                        );
-                        xhr.onload = function () {
-                            console.log("Signed in as: " + xhr.responseText);
-                        };
-                        xhr.send("code=" + response.code);
-                        // After receipt, the code is exchanged for an access token and
-                        // refresh token, and the platform then updates this web app
-                        // running in user's browser with the requested calendar info.
-                    },
-                });
-            }
-            function getAuthCode() {
-                // Request authorization code and obtain user consent
-                client.requestCode();
-            }
-        </script> -->
-    <!-- <button onclick="getAuthCode();">Load Your Calendar</button>
-    </body>
-</html> -->
-
-    <!--html lang="en" xml:lang="en">
-    <head>
-        <title>Live Server</title>
-    </head>
-    <body>
-        <script type="module" src="js/main.js"></script>
-        <script
-            src="https://apis.google.com/js/platform.js?onload=init"
-            async
-            defer
-        ></script>
-
-        <div>
-            <select id="event_type_sel">
-                <option value="concert">🎶 Concert</option>
-                <option value="comedy">😀 Comedy</option>
-                <option value="other">Other</option>
-                <option value="custom">Custom</option>
-            </select>
-            <input id="event_name_input" type="text" />
-
-            <div>
-                <label for="event_dt">Event time and date</label>
-                <input type="datetime-local" id="event_dt" />
-            </div>
-
-            <div>
-                <label for="event_url">Participants</label>
-                <input type="number" id="participants_ipt" />
-            </div>
-        </div>
-
-        <div>
-            <div>
-                <input type="checkbox" id="no_purchase_task" />
-                <label for="no_purchase_task">
-                    Don't create a task to purchase tickets
-                </label>
-            </div>
-
-            <label for="ticket_dt">Ticket sale opens</label>
-            <input type="datetime-local" id="ticket_dt" />
-        </div>
-        <div>
-            <button id="add_btn">Add to Calendar</button>
-        </div>
-    </body>
-</html-->
 </html>
