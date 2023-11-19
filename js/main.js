@@ -621,7 +621,6 @@ async function listCalendarEvents(calendarId) {
         const table = document.getElementById("calendar_events_table");
         for (const event of events) {
             if (event.summary.match(/^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u)) {
-                console.log(event);
                 const row = table.insertRow(-1);
                 const cell1 = row.insertCell(0);
                 const cell2 = row.insertCell(1);
@@ -632,7 +631,24 @@ async function listCalendarEvents(calendarId) {
                 );
                 if (matches) {
                     cell1.innerHTML = matches[1];
+
+                    let namesArray = matches[1].split(/,|og|and/);
+
+                    // Remove extra whitespaces and filter out empty strings
+                    let cleanedNames = namesArray
+                        .map(function (name) {
+                            return name.trim();
+                        })
+                        .filter(function (name) {
+                            return name !== "";
+                        });
+
+                    // Add each name to the autocomplete list
+                    cleanedNames.forEach(function (name) {
+                        autocompleteAdd("participants", name);
+                    });
                 }
+
                 if (event.start.date) {
                     let startDate = new Date(event.start.date);
                     let endDate = new Date(event.end.date);
