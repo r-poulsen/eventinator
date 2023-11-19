@@ -71,7 +71,7 @@ td {
     cursor: pointer;
     background-color: #fff;
     border-bottom: 1px solid #d4d4d4;
-    font-size: 1.1em;
+    font-size: 1.2em;
     color: black;
 }
 
@@ -90,7 +90,7 @@ td {
         display: none;
     }
 
-    .autocomplete-items div {
+    table {
         font-size: 1em;
     }
 
