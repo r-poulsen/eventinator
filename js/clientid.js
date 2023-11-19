@@ -1,2 +1,2 @@
 const CLIENT_ID =
-    "550349020422-lb1ug06s02j3kiia7fvdib4btppa6u2r.apps.googleusercontent.com";
+    "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com";
