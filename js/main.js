@@ -625,6 +625,7 @@ async function listCalendarEvents(calendarId) {
         const table = document.getElementById("calendar_events_table");
         for (const event of events) {
             if (event.summary.match(/^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u)) {
+                console.log(event);
                 const row = table.insertRow(-1);
                 const cell1 = row.insertCell(0);
                 const cell2 = row.insertCell(1);
@@ -637,7 +638,6 @@ async function listCalendarEvents(calendarId) {
                     cell1.innerHTML = matches[1];
                 }
                 if (event.start.date) {
-                    // cell2.innerHTML = `${event.start.date} - ${event.end.date}`;
                     cell2.innerHTML = `${new Date(
                         event.start.date
                     ).toLocaleString("da-DK", {
