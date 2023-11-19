@@ -1,8 +1,5 @@
 let listInput = null;
 
-// const CLIENT_ID =
-//     "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com";
-
 // Discovery doc URL for APIs used by the quickstart
 const DISCOVERY_DOCS = [
     "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
@@ -11,7 +8,6 @@ const DISCOVERY_DOCS = [
 // Authorization scopes required by the API; multiple scopes can be
 // included, separated by spaces.
 const SCOPES = "https://www.googleapis.com/auth/calendar.events.owned";
-// + " https://www.googleapis.com/auth/tasks";
 
 let tokenClient;
 let gapiInited = false;
@@ -638,19 +634,37 @@ async function listCalendarEvents(calendarId) {
                     cell1.innerHTML = matches[1];
                 }
                 if (event.start.date) {
-                    cell2.innerHTML = `${new Date(
-                        event.start.date
-                    ).toLocaleString("da-DK", {
-                        weekday: "short",
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                    })} - ${new Date(event.end.date).toLocaleString("da-DK", {
-                        weekday: "short",
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                    })}`;
+                    let startDate = new Date(event.start.date);
+                    let endDate = new Date(event.end.date);
+                    endDate.setDate(endDate.getDate() - 1);
+
+                    if (endDate < startDate) {
+                        endDate = new Date(event.end.date);
+                    }
+
+                    console.log(startDate.getTime());
+                    console.log(endDate.getTime());
+
+                    if (startDate.getTime() === endDate.getTime()) {
+                        cell2.innerHTML = `${startDate.toLocaleString("da-DK", {
+                            weekday: "short",
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                        })}`;
+                    } else {
+                        cell2.innerHTML = `${startDate.toLocaleString("da-DK", {
+                            weekday: "short",
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                        })} - ${endDate.toLocaleString("da-DK", {
+                            weekday: "short",
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                        })}`;
+                    }
                 } else {
                     cell2.innerHTML = `${new Date(
                         event.start.dateTime
@@ -678,13 +692,6 @@ async function listCalendarEvents(calendarId) {
                     cell4.innerHTML = event.location;
                     autocompleteAdd("location", event.location);
                 }
-
-                // const when = event.start.dateTime;
-                // if (when) {
-                //     console.log(`${event.summary} (${when})`);
-                // } else {
-                //     console.log(`${event.summary} (all day)`);
-                // }
             }
         }
     } else {
