@@ -1,74 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
+        <title>Eventinator</title>
         <script src="/js/main.js"></script>
         <script src="https://accounts.google.com/gsi/client"></script>
         <script src="https://apis.google.com/js/api.js"></script>
-        <link rel="stylesheet" href="style.css" />
+        <link rel="stylesheet" href="/css/style.css" />
     </head>
 
     <body>
         <div id="authorize">
-            <p>
-                Before using the application, you must authorize access to your
-                calendar and documents.
-            </p>
-            <button id="authorize_button" onclick="handleAuthClick()">
-                Authorize
-            </button>
+            <p>Authorizing with Google...</p>
         </div>
 
-        <div id="main">
+        <div id="main" style="visibility: hidden">
             <fieldset>
-                <legend>Options</legend>
+                <legend>Valg</legend>
                 <span class="options">
                     <input type="checkbox" id="purchase_reminder" checked />
                     <label for="purchase_reminder">
-                        Remind me to purchase tickets</label
+                        Husk mig på at købe billetter</label
                     ><span id="ticket_calendar"
-                        >; <label for="ticket_calendar_select">Calendar</label>
+                        >; <label for="ticket_calendar_select">Kalender</label>
                         <select id="ticket_calendar_select"></select>
                     </span>
                 </span>
 
                 <span class="options">
                     <input type="checkbox" id="calendar_entry" checked />
-                    <label for="calendar_entry">
-                        Create a calendar entry for the event</label
+                    <label for="calendar_entry"> Opret begivenheden</label
                     ><span id="event_calendar"
-                        >; <label for="event_calendar_select">Calendar</label>
+                        >; <label for="event_calendar_select">Kalender</label>
                         <select id="event_calendar_select"></select
                     ></span>
-                </span>
-
-                <span class="options">
-                    <input type="checkbox" id="update_doc" checked />
-                    <label for="update_doc">
-                        Update a Google document with the event details
-                    </label>
                 </span>
             </fieldset>
 
             <fieldset id="event">
-                <legend>Event</legend>
+                <legend>Begivenhed</legend>
 
                 <span id="event_title">
                     <label for="event_type_sel">Type</label>
                     <select id="event_type_sel">
-                        <option value="concert">🎶 Concert</option>
-                        <option value="movie">🎥 Movie</option>
+                        <option value="concert">🎶 Koncert</option>
+                        <option value="movie">🎥 Film</option>
                         <option value="comedy">😀 Comedy</option>
-                        <option value="sports">🏈 Sports</option>
-                        <option value="theater">🎭 Theater</option>
+                        <option value="sports">🏈 Sport</option>
+                        <option value="theater">🎭 Teater</option>
                         <option value="festival">🎉 Festival</option>
-                        <option value="other">🎫 Other</option>
+                        <option value="other">🎫 Andet</option>
                     </select>
                 </span>
 
                 <span>
-                    <label for="event_name_input">Name</label>
+                    <label for="event_name">Navn*</label>
                     <input
-                        id="event_name_input"
+                        id="event_name"
                         type="text"
                         placeholder="Event name"
                     />
@@ -80,32 +67,28 @@
             </fieldset>
 
             <fieldset id="ticket">
-                <legend>Ticket sale</legend>
+                <legend>Billet-salg</legend>
                 <span>
-                    <label for="ticket_dt">Start</label>
+                    <label for="ticket_dt">Start*</label>
                     <input type="datetime-local" id="ticket_dt" />
 
                     <label for="ticket_url">URL</label>
                     <input type="url" id="ticket_url" />
 
-                    <label for="ticket_notes">Notes</label>
+                    <label for="ticket_notes">Noter</label>
                     <input type="url" id="ticket_notes" />
                 </span>
             </fieldset>
 
             <fieldset id="event_time">
+                <legend>Tid og sted</legend>
                 <span>
-                    <label for="location">Location</label>
-                    <input id="location" />
-                </span>
-                <legend>Event Time and Place</legend>
-                <span>
-                    <label for="event_dt">Start</label>
+                    <label for="event_dt">Start*</label>
                     <input type="datetime-local" id="event_dt" />
                 </span>
 
                 <span id="duration_hours_elements"
-                    ><label for="event_duration_hours">Duration, hours</label>
+                    ><label for="event_duration_hours">Varighed, timer</label>
                     <input
                         type="number"
                         id="event_duration_hours"
@@ -114,7 +97,7 @@
                     />
                 </span>
                 <span id="duration_days_elements" style="display: none"
-                    ><label for="event_duration_days">Duration, days</label>
+                    ><label for="event_duration_days">Varighed, dage</label>
                     <input
                         type="number"
                         id="event_duration_days"
@@ -128,13 +111,23 @@
                         id="all_day"
                         onchange="toggleDurationInputs()"
                     />
-                    <label for="all_day"> All day event </label>
+                    <label for="all_day"> Heldags-begivenhed </label>
                 </div>
+
+                <span>
+                    <label for="location">Lokation</label>
+                    <input id="location" />
+                </span>
             </fieldset>
-            <div id="add_container">
-                <button id="add_btn">Add to Calendar(s)</button>
+            <div>
+                <button type="submit" id="add_btn" disabled>Knap</button>
             </div>
         </div>
+
+        <fieldset id="calendar_events">
+            <legend>Kommende begivenheder</legend>
+            <table id="calendar_events_table"></table>
+        </fieldset>
 
         <script
             async

@@ -1,110 +1,31 @@
-// class EventinatorApp {
-//     constructor() {
-//         console.log("EventinatorApp constructor");
-//     }
-// }
+let listInput = null;
 
-// console.log("main.js loaded");
-// let ea = new EventinatorApp();
+const CLIENT_ID =
+    "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com";
 
-/*
- * Create form to request access token from Google's OAuth 2.0 server.
- */
-// function oauthSignIn() {
-// Google's OAuth 2.0 endpoint for requesting an access token
-// var oauth2Endpoint = "https://accounts.google.com/o/oauth2/v2/auth";
+// Discovery doc URL for APIs used by the quickstart
+const DISCOVERY_DOCS = [
+    "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
+    //"https://www.googleapis.com/discovery/v1/apis/tasks/v1/rest",
+];
+// Authorization scopes required by the API; multiple scopes can be
+// included, separated by spaces.
+const SCOPES = "https://www.googleapis.com/auth/calendar.events.owned";
+// + " https://www.googleapis.com/auth/tasks";
 
-// Create <form> element to submit parameters to OAuth 2.0 endpoint.
-// var form = document.createElement("form");
-// form.setAttribute("method", "GET"); // Send as a GET request.
-// form.setAttribute("action", oauth2Endpoint);
-
-// Parameters to pass to OAuth 2.0 endpoint.
-// var params = {
-//     client_id:
-//         "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com",
-//     redirect_uri:
-//         "https://r-poulsen.github.io/eventinator/oauth2redirect.html",
-//     response_type: "token",
-//     scope: "https://www.googleapis.com/auth/drive.metadata.readonly",
-//     include_granted_scopes: "true",
-//     state: "pass-through value",
-// };
-
-// Add form parameters as hidden input values.
-// for (var p in params) {
-//     var input = document.createElement("input");
-//     input.setAttribute("type", "hidden");
-//     input.setAttribute("name", p);
-//     input.setAttribute("value", params[p]);
-//     form.appendChild(input);
-// }
-
-// Add form to page and submit it to open the OAuth 2.0 endpoint.
-//     document.body.appendChild(form);
-//     form.submit();
-// }
-
-// if (!localStorage.getItem("access_token")) {
-//     oauthSignIn();
-// } else {
-//     gapi.load("client", initClient);
-// }
-
-// function initClient() {
-//     gapi.client
-//         .init({
-//             apiKey: "YOUR_API_KEY", // Your API Key
-//             clientId: "YOUR_CLIENT_ID", // Your OAuth Client ID
-//             discoveryDocs: [
-//                 "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
-//             ],
-//             scope: "https://www.googleapis.com/auth/calendar.events",
-//         })
-//         .then(function () {
-// Handle the client initialization
-// Call functions here to interact with the API
-
-//             gapi.client.calendar.events
-//                 .insert({
-//                     calendarId: "primary", // Use 'primary' for the default calendar
-//                     resource: {
-//                         summary: "Event Title",
-//                         description: "Event Description",
-//                         start: {
-//                             dateTime: "2023-11-12T10:00:00",
-//                             timeZone: "UTC",
-//                         },
-//                         end: {
-//                             dateTime: "2023-11-12T12:00:00",
-//                             timeZone: "UTC",
-//                         },
-//                     },
-//                 })
-//                 .then(
-//                     function (response) {
-//                         console.log(
-//                             "Event created: " + response.result.htmlLink
-//                         );
-//                     },
-//                     function (error) {
-//                         console.error(
-//                             "Error creating event: " +
-//                                 error.result.error.message
-//                         );
-//                     }
-//                 );
-//         });
-// }
+let tokenClient;
+let gapiInited = false;
+let gisInited = false;
 
 class ListInput {
-    constructor(baseName) {
+    constructor(baseName, placeholder, placeholderPlural) {
         this.baseName = baseName;
+        this.placeholder = placeholder;
         this.containerElement = document.getElementById(this.baseName);
 
         const label = document.createElement("label");
         label.for = this.baseName + "_input";
-        label.textContent = this.baseName;
+        label.textContent = this.placeholderPlural;
 
         this.numInput = document.createElement("input");
         this.numInput.type = "number";
@@ -124,31 +45,45 @@ class ListInput {
             "input",
             this.adjustInputFields.bind(this)
         );
-
         this.adjustInputFields();
     }
-
     adjustInputFields() {
         const inputCount = this.numInput.value;
         const listContainer = document.getElementById(
             this.baseName + "_list_container"
         );
-
         // Remove superfluous input fields
         while (listContainer.children.length > inputCount) {
             listContainer.removeChild(listContainer.lastChild);
         }
-
         // Add new input fields
         for (let i = listContainer.children.length; i < inputCount; i++) {
             const input = document.createElement("input");
             input.type = "text";
+            let pluralizedName;
             if (this.baseName.endsWith("s")) {
-                input.placeholder = `${this.baseName.slice(0, -1)} ${i + 1}`;
+                pluralizedName = this.baseName.slice(0, -1);
             } else {
-                input.placeholder = `${this.baseName} ${i + 1}`;
+                pluralizedName = this.baseName;
             }
+            input.placeholder = `${this.placeholder} ${i + 1}`;
+            input.id = `${pluralizedName}_${i + 1}`;
+
+            // Set the value to the localStorage item
+            const localStorageItem = localStorage.getItem(
+                `${input.id}_autocomplete`
+            );
+            if (localStorageItem) {
+                input.value = localStorageItem;
+            }
+
             listContainer.appendChild(input);
+            autocomplete(input.id, "participants_autocomplete");
+
+            // Add event listener to update localStorage item on input change
+            input.addEventListener("input", () => {
+                localStorage.setItem(`${input.id}_autocomplete`, input.value);
+            });
         }
     }
 
@@ -182,22 +117,17 @@ class ListInput {
         if (values.length === 1) {
             result = values[0];
         } else if (values.length === 2) {
-            result = `${values[0]} and ${values[1]}`;
+            result = `${values[0]} og ${values[1]}`;
         } else if (values.length > 2) {
-            result = `${values.slice(0, -1).join(", ")} and ${values.slice(
-                -1
-            )}`;
+            result = `${values.slice(0, -1).join(", ")} og ${values.slice(-1)}`;
         }
-
         return result;
     }
 }
 
-let listInput = null;
-
 document.addEventListener("DOMContentLoaded", () => {
     // Initialize the glorious Participants input
-    listInput = new ListInput("Participants");
+    listInput = new ListInput("Participants", "Deltager", "Deltagere");
 
     // Set the date and time of the ticket and event inputs to something somewhat sensible
     setDateTimeInput("ticket_dt", 1, 10);
@@ -205,59 +135,267 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Add enable_disable_inputs() as an event listener when any of these checkboxes are clicked
 
-    ["purchase_reminder", "calendar_entry", "update_doc"].forEach(
-        (checkbox_id) => {
-            document
-                .getElementById(checkbox_id)
-                .addEventListener("click", enable_disable_inputs);
-        }
-    );
+    ["purchase_reminder", "calendar_entry"].forEach((checkbox_id) => {
+        document
+            .getElementById(checkbox_id)
+            .addEventListener("click", enable_disable_inputs);
+    });
+
+    // Add enable_disable_add_button() as an event listener when any of these inputs are changed
+    [
+        "purchase_reminder",
+        "calendar_entry",
+        "event_name",
+        "ticket_dt",
+        "event_dt",
+    ].forEach((input_id) => {
+        document
+            .getElementById(input_id)
+            .addEventListener("input", enable_disable_add_button);
+    });
 
     enable_disable_inputs();
+
+    document.getElementById("add_btn").addEventListener("click", () => {
+        //
+        try {
+            const names = Array.from(
+                document.querySelectorAll("#Participants_list_container input")
+            ).map((input) => input.value || input.placeholder);
+
+            let nameString;
+            switch (names.length) {
+                case 0:
+                    nameString = "";
+                    break;
+                case 1:
+                    nameString = names[0];
+                    break;
+                case 2:
+                    nameString = names.join(" og ");
+                    break;
+                default:
+                    nameString = `${names.slice(0, -1).join(", ")} og ${
+                        names[names.length - 1]
+                    }`;
+            }
+
+            let tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            if (document.getElementById("purchase_reminder").checked) {
+                let noun = names.length > 1 ? "billetter" : "billet";
+
+                const reminder = {
+                    summary: `Køb ${noun} til ${
+                        document.getElementById("event_name").value
+                    }`,
+                    description: `${names.length} ${noun}; Til ${nameString}${
+                        document.getElementById("ticket_url").value
+                            ? "\n\n" +
+                              document.getElementById("ticket_url").value
+                            : ""
+                    }${
+                        document.getElementById("ticket_notes").value
+                            ? "\n\n" +
+                              document.getElementById("ticket_notes").value
+                            : ""
+                    }`,
+                    start: {
+                        dateTime: new Date(
+                            document.getElementById("ticket_dt").value
+                        ).toISOString(),
+                        timeZone: tz,
+                    },
+                    end: {
+                        dateTime: new Date(
+                            Date.parse(
+                                document.getElementById("ticket_dt").value
+                            ) +
+                                15 * 60 * 1000
+                        ).toISOString(),
+                        timeZone: tz,
+                    },
+                    reminders: {
+                        useDefault: false,
+                        overrides: [
+                            { method: "email", minutes: 30 },
+                            { method: "popup", minutes: 10 },
+                        ],
+                    },
+                };
+
+                console.log("Adding reminder");
+                console.log(reminder);
+                // Save the id of the calendar in a localstorage item
+                // so we can use it later
+                localStorage.setItem(
+                    "latest_used_reminder_calendar",
+                    document.getElementById("ticket_calendar_select").value
+                );
+                addCalendarEvent(
+                    reminder,
+                    document.getElementById("ticket_calendar_select").value
+                );
+            }
+
+            if (document.getElementById("calendar_entry").checked) {
+                let selectElement = document.getElementById("event_type_sel");
+                let selectedOption =
+                    selectElement.options[selectElement.selectedIndex];
+
+                let start = {
+                    timeZone: tz,
+                };
+                let end = {
+                    timeZone: tz,
+                };
+                if (document.getElementById("all_day").checked) {
+                    start["date"] = new Date(
+                        document.getElementById("event_dt").value
+                    )
+                        .toISOString()
+                        .slice(0, 10);
+                    end["date"] = new Date(
+                        Date.parse(document.getElementById("event_dt").value) +
+                            document.getElementById("event_duration_days")
+                                .value *
+                                24 *
+                                60 *
+                                60 *
+                                1000
+                    )
+                        .toISOString()
+                        .slice(0, 10);
+                } else {
+                    start["dateTime"] = new Date(
+                        document.getElementById("event_dt").value
+                    ).toISOString();
+                    end["dateTime"] = new Date(
+                        Date.parse(document.getElementById("event_dt").value) +
+                            document.getElementById("event_duration_hours")
+                                .value *
+                                60 *
+                                60 *
+                                1000
+                    ).toISOString();
+                }
+                const event = {
+                    summary: `${selectedOption.textContent}: ${
+                        document.getElementById("event_name").value
+                    }`,
+                    location: document.getElementById("location").value,
+                    description: `Deltagere: ${nameString}`,
+                    start: start,
+                    end: end,
+                };
+
+                console.log("Adding event");
+                console.log(event);
+                localStorage.setItem(
+                    "latest_used_event_calendar",
+                    document.getElementById("event_calendar_select").value
+                );
+                addCalendarEvent(
+                    event,
+                    document.getElementById("event_calendar_select").value,
+                    true
+                );
+            }
+        } catch (error) {
+            // Don't know if this works
+            console.log(error);
+            localStorage.removeItem("access_token");
+            gapi.client.setToken(null);
+            document.getElementById("add_btn").click();
+        }
+        autocompleteAdd(
+            "event_name",
+            document.getElementById("event_name").value
+        );
+        autocompleteAdd("location", document.getElementById("location").value);
+
+        // add each participant to the autocomplete list
+        Array.from(
+            document.querySelectorAll("#Participants_list_container input")
+        ).forEach((input) => {
+            autocompleteAdd("participants", input.value);
+            localStorage.setItem(`${input.id}_autocomplete`, input.value);
+        });
+    });
+
+    autocomplete("event_name");
+    autocomplete("location");
 });
+
+function enable_disable_add_button() {
+    const task = document.getElementById("purchase_reminder").checked;
+    const event = document.getElementById("calendar_entry").checked;
+
+    const event_name_valid =
+        document.getElementById("event_name").value.trim() !== "";
+
+    const event_date_valid = Date.parse(
+        document.getElementById("event_dt").value
+    );
+
+    const task_date_valid = Date.parse(
+        document.getElementById("ticket_dt").value
+    );
+
+    document.getElementById("add_btn").style.display = "";
+
+    if (task && event) {
+        document.getElementById("add_btn").innerText =
+            "Opret påmindelse og begivenhed";
+
+        document.getElementById("add_btn").disabled = !(
+            task_date_valid &&
+            event_name_valid &&
+            event_date_valid
+        );
+    } else if (task && !event) {
+        document.getElementById("add_btn").innerText = "Opret påmindelse";
+        document.getElementById("add_btn").disabled = !(
+            task_date_valid &&
+            event_name_valid &&
+            event_date_valid
+        );
+    } else if (!task && event) {
+        document.getElementById("add_btn").innerText = "Opret begivenhed";
+
+        document.getElementById("add_btn").disabled = !(
+            event_name_valid && event_date_valid
+        );
+    } else {
+        console.log("Hide");
+        document.getElementById("add_btn").style.display = "none";
+    }
+}
 
 function enable_disable_inputs() {
     enableElementsInContainer(
         "ticket",
         document.getElementById("purchase_reminder").checked
     );
-
     enableElementsInContainer(
         "ticket_calendar",
         document.getElementById("purchase_reminder").checked
     );
-
-    // enableElementsInContainer(
-    //     "event_time",
-    //     document.getElementById("calendar_entry").checked
-    // );
-
     enableElementsInContainer(
         "event_time",
-        document.getElementById("calendar_entry").checked ||
-            document.getElementById("update_doc").checked
+        document.getElementById("calendar_entry").checked
     );
-
-    enableElementsInContainer(
-        "add_container",
-        document.getElementById("purchase_reminder").checked ||
-            document.getElementById("calendar_entry").checked ||
-            document.getElementById("update_doc").checked
-    );
-
     enableElementsInContainer(
         "event",
         document.getElementById("purchase_reminder").checked ||
-            document.getElementById("calendar_entry").checked ||
-            document.getElementById("update_doc").checked
+            document.getElementById("calendar_entry").checked
     );
-
     enableElementsInContainer(
         "event_calendar",
         document.getElementById("calendar_entry").checked
     );
-
     toggleDurationInputs();
+    enable_disable_add_button();
 }
 
 function setDateTimeInput(input_id, daysOffset, hours) {
@@ -326,23 +464,6 @@ function enableElementsInContainer(id, enable = true) {
     }
 }
 
-const CLIENT_ID =
-    "550349020422-m8h9na45b8abctrht36fsqadaueaqfrn.apps.googleusercontent.com";
-//const API_KEY = "<YOUR_API_KEY>";
-
-// Discovery doc URL for APIs used by the quickstart
-const DISCOVERY_DOC =
-    "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest";
-
-// Authorization scopes required by the API; multiple scopes can be
-// included, separated by spaces.
-const SCOPES =
-    "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events.owned";
-
-let tokenClient;
-let gapiInited = false;
-let gisInited = false;
-
 /**
  * Callback after api.js is loaded.
  */
@@ -357,10 +478,10 @@ function gapiLoaded() {
 async function initializeGapiClient() {
     await gapi.client.init({
         //apiKey: API_KEY,
-        discoveryDocs: [DISCOVERY_DOC],
+        discoveryDocs: DISCOVERY_DOCS,
     });
     gapiInited = true;
-    maybeEnableButtons();
+    googeApisLoaded();
 }
 
 /**
@@ -371,128 +492,390 @@ function gisLoaded() {
         client_id: CLIENT_ID,
         scope: SCOPES,
         callback: "", // defined later
+        prompt: "",
     });
     gisInited = true;
-    maybeEnableButtons();
+    googeApisLoaded();
 }
 
 /**
  * Enables user interaction after all libraries are loaded.
  */
-function maybeEnableButtons() {
+function googeApisLoaded() {
     if (gapiInited && gisInited) {
         // document.getElementById("authorize").style.visibility = "visible";
         document.getElementById("authorize").style.display = "";
+        authenticate();
     }
 }
 
 /**
- *  Sign in the user upon button click.
+ * Authenticates the user and retrieves an access token.
+ * If an access token already exists and is valid, it skips the authentication process.
+ * If the access token is expired or invalid, it deletes the token and retries the authentication.
+ * @returns {Promise<void>} A promise that resolves when the authentication process is complete.
  */
-function handleAuthClick() {
+async function authenticate() {
     tokenClient.callback = async (resp) => {
         if (resp.error !== undefined) {
             throw resp;
         }
-        // document.getElementById("authorize").style.visibility = "hidden";
+        localStorage.setItem(
+            "access_token",
+            gapi.client.getToken().access_token
+        );
         document.getElementById("authorize").style.display = "none";
         document.getElementById("main").style.visibility = "visible";
         await listCalendars();
     };
 
+    if (localStorage.getItem("access_token") !== null) {
+        console.log("Using existing access token");
+        gapi.client.setToken({
+            access_token: localStorage.getItem("access_token"),
+        });
+
+        if (gapi.client.getToken() && !gapi.client.getToken().expired) {
+            // Access token seems valid
+            document.getElementById("authorize").style.display = "none";
+            document.getElementById("main").style.visibility = "visible";
+            try {
+                await listCalendars();
+            } catch (error) {
+                // Any errors encountered here are most likely due to an invalid access token,
+                // so we delete it and try again
+                console.log(error);
+                localStorage.removeItem("access_token");
+                gapi.client.setToken(null);
+                await authenticate();
+            }
+        } else {
+            // Access token is expired
+            console.log("Token expired");
+            localStorage.removeItem("access_token");
+            gapi.client.setToken(null);
+            await authenticate();
+        }
+    }
+
     if (gapi.client.getToken() === null) {
-        // Prompt the user to select a Google Account and ask for consent to share their data
-        // when establishing a new session.
         tokenClient.requestAccessToken({ prompt: "consent" });
-    } else {
-        // Skip display of account chooser and consent dialog for an existing session.
-        tokenClient.requestAccessToken({ prompt: "" });
     }
 }
 
 /**
- * List calendars using the Google Calendar API.
+ * Retrieves a list of calendars and populates the ticket and event select elements.
+ * @returns {Promise<void>} A promise that resolves when the calendars are listed.
  */
 async function listCalendars() {
     const response = await gapi.client.calendar.calendarList.list();
     const ticketElement = document.getElementById("ticket_calendar_select");
     const eventElement = document.getElementById("event_calendar_select");
 
+    // Clear the select elements
+    while (ticketElement.options.length > 0) {
+        ticketElement.remove(0);
+    }
+    while (eventElement.options.length > 0) {
+        eventElement.remove(0);
+    }
     response.result.items.forEach((calendar) => {
         if (calendar.accessRole !== "reader") {
             const optionElement = document.createElement("option");
             optionElement.value = calendar.id;
             optionElement.text = calendar.summary;
-
             eventElement.add(optionElement);
             ticketElement.add(optionElement.cloneNode(true));
+        }
+        listCalendarEvents(calendar.id);
+    });
+
+    // Preselect the calendar based on the ID stored in localStorage
+    const latestEventCalendarId = localStorage.getItem(
+        "latest_used_event_calendar"
+    );
+    if (latestEventCalendarId) {
+        eventElement.value = latestEventCalendarId;
+    }
+    const latestReminderCalendarId = localStorage.getItem(
+        "latest_used_reminder_calendar"
+    );
+    if (latestEventCalendarId) {
+        ticketElement.value = latestReminderCalendarId;
+    }
+}
+
+/**
+ * Retrieves and lists upcoming calendar events.
+ *
+ * @param {string} calendarId - The ID of the calendar to retrieve events from.
+ * @returns {Promise<void>} - A promise that resolves when the events are listed.
+ */
+async function listCalendarEvents(calendarId) {
+    const response = await gapi.client.calendar.events.list({
+        calendarId: calendarId,
+        timeMin: new Date().toISOString(),
+        showDeleted: false,
+        singleEvents: true,
+        maxResults: 10,
+        orderBy: "startTime",
+    });
+    const events = response.result.items;
+    console.log("Upcoming events:");
+    if (events.length > 0) {
+        const table = document.getElementById("calendar_events_table");
+        for (const event of events) {
+            if (event.summary.match(/^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u)) {
+                const row = table.insertRow(-1);
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                const cell3 = row.insertCell(2);
+                const cell4 = row.insertCell(3);
+                let matches = event.description.match(
+                    /(?:Participants|Deltagere): (.+)/u
+                );
+                if (matches) {
+                    cell1.innerHTML = matches[1];
+                }
+                if (event.start.date) {
+                    // cell2.innerHTML = `${event.start.date} - ${event.end.date}`;
+                    cell2.innerHTML = `${new Date(
+                        event.start.date
+                    ).toLocaleString("da-DK", {
+                        weekday: "short",
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                    })} - ${new Date(event.end.date).toLocaleString("da-DK", {
+                        weekday: "short",
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                    })}`;
+                } else {
+                    cell2.innerHTML = `${new Date(
+                        event.start.dateTime
+                    ).toLocaleString("da-DK", {
+                        weekday: "short",
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "numeric",
+                    })}`;
+                }
+                matches = event.summary.match(
+                    /^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u
+                );
+                if (matches) {
+                    let a = document.createElement("a");
+                    a.href = event.htmlLink;
+                    a.target = "_new";
+                    a.innerHTML = matches[1];
+                    cell3.appendChild(a);
+                }
+                autocompleteAdd("event_name", matches[1]);
+                if (event.location) {
+                    cell4.innerHTML = event.location;
+                    autocompleteAdd("location", event.location);
+                }
+
+                // const when = event.start.dateTime;
+                // if (when) {
+                //     console.log(`${event.summary} (${when})`);
+                // } else {
+                //     console.log(`${event.summary} (all day)`);
+                // }
+            }
+        }
+    } else {
+        console.log("No upcoming events found.");
+    }
+}
+
+/**
+ * Adds a calendar event to the specified calendar.
+ *
+ * @param {Object} event - The event object to be added.
+ * @param {boolean} [reloadEvents=false] - Indicates whether to reload the events table after adding the event.
+ * @returns {Promise<void>} - A promise that resolves when the event is added successfully.
+ */
+async function addCalendarEvent(event, calendarId, reloadEvents = false) {
+    const request = gapi.client.calendar.events.insert({
+        calendarId: calendarId,
+        resource: event,
+    });
+    request.execute((response) => {
+        if (response.error) {
+            console.error(
+                `HTTP ${response.error.code} contacting the Calendar service:\n${response.error.message}`
+            );
+            throw error;
+        } else {
+            console.log(`Event created:  ${response.htmlLink}`);
+            if (reloadEvents) {
+                // Clear the table
+                const table = document.getElementById("calendar_events_table");
+                while (table.rows.length > 0) {
+                    table.deleteRow(-1);
+                }
+                // Reload the table for all calendars
+                listCalendars();
+            }
         }
     });
 }
 
 /**
- * Add a calendar entry using the Google Calendar API.
+ * Adds a value to the autocomplete options for a given input field.
+ * If the value already exists in the autocomplete options, it will not be added again.
+ *
+ * @param {string} input_id - The ID of the input field.
+ * @param {string} value - The value to be added to the autocomplete options.
+ * @param {string} [localStorage_item] - The name of the localStorage item to store the autocomplete options.
+ *                                       If not provided, it will be generated based on the input ID.
  */
-async function addCalendarEntry() {
-    const event = {
-        summary: "Google I/O 2015",
-        location: "800 Howard St., San Francisco, CA 94103",
-        description: "A chance to hear more about Google's developer products.",
-        start: {
-            dateTime: "2023-12-01T09:00:00-07:00",
-            timeZone: "America/Los_Angeles",
-        },
-        end: {
-            dateTime: "2023-12-01T17:00:00-07:00",
-            timeZone: "America/Los_Angeles",
-        },
-    };
-
-    const request = gapi.client.calendar.events.insert({
-        calendarId: "primary",
-        resource: event,
-    });
-
-    request.execute((event) => {
-        document.getElementById("content").innerText =
-            "Event created: " + event.htmlLink;
-    });
+function autocompleteAdd(
+    input_id,
+    value,
+    localStorage_item = `${input_id}_autocomplete`
+) {
+    if (value) {
+        const locationAutocomplete = localStorage.getItem(localStorage_item);
+        // Use a set to avoid duplicates
+        const autocompleteOptions = locationAutocomplete
+            ? new Set(JSON.parse(locationAutocomplete))
+            : new Set();
+        autocompleteOptions.add(value);
+        localStorage.setItem(
+            localStorage_item,
+            JSON.stringify(Array.from(autocompleteOptions))
+        );
+    }
 }
 
 /**
- * Print the summary and start datetime/date of the next ten events in
- * the authorized user's calendar. If no events are found an
- * appropriate message is printed.
+ * Initializes an autocomplete functionality for a given input field.
+ * @param {string} input_id - The ID of the input field.
+ * @param {string} [localStorage_item] - The name of the localStorage item to store autocomplete values. Defaults to `${input_id}_autocomplete`.
  */
-async function listUpcomingEvents() {
-    let response;
-    try {
-        const request = {
-            calendarId: "primary",
-            timeMin: new Date().toISOString(),
-            showDeleted: false,
-            singleEvents: true,
-            maxResults: 10,
-            orderBy: "startTime",
-        };
-        response = await gapi.client.calendar.events.list(request);
-    } catch (err) {
-        document.getElementById("content").innerText = err.message;
-        return;
+function autocomplete(
+    input_id,
+    localStorage_item = `${input_id}_autocomplete`
+) {
+    let input_elem = document.getElementById(input_id);
+    /*the autocomplete function takes two arguments,
+    the text field element and an array of possible autocompleted values:*/
+    let currentFocus;
+    /*execute a function when someone writes in the text field:*/
+    input_elem.addEventListener("input", function (e) {
+        let a,
+            b,
+            i,
+            val = this.value;
+        /*close any already open lists of autocompleted values*/
+        closeAllLists();
+        if (!val) {
+            return false;
+        }
+        currentFocus = -1;
+        /*create a DIV element that will contain the items (values):*/
+        a = document.createElement("DIV");
+        a.setAttribute("id", this.id + "autocomplete-list");
+        a.setAttribute("class", "autocomplete-items");
+        /*append the DIV element as a child of the autocomplete container:*/
+        this.parentNode.appendChild(a);
+        /*for each item in the array...*/
+
+        const locationAutocomplete = localStorage.getItem(localStorage_item);
+        const autocompleteItems = locationAutocomplete
+            ? JSON.parse(locationAutocomplete)
+            : [];
+
+        for (i = 0; i < autocompleteItems.length; i++) {
+            /*check if the item starts with the same letters as the text field value:*/
+            if (
+                autocompleteItems[i].substr(0, val.length).toUpperCase() ==
+                val.toUpperCase()
+            ) {
+                /*create a DIV element for each matching element:*/
+                b = document.createElement("DIV");
+                /*make the matching letters bold:*/
+                b.innerHTML =
+                    "<strong>" +
+                    autocompleteItems[i].substr(0, val.length) +
+                    "</strong>";
+                b.innerHTML += autocompleteItems[i].substr(val.length);
+                /*insert a input field that will hold the current array item's value:*/
+                b.innerHTML +=
+                    "<input type='hidden' value='" +
+                    autocompleteItems[i] +
+                    "'>";
+                /*execute a function when someone clicks on the item value (DIV element):*/
+                b.addEventListener("click", function (e) {
+                    /*insert the value for the autocomplete text field:*/
+                    input_elem.value =
+                        this.getElementsByTagName("input")[0].value;
+                    /*close the list of autocompleted values,
+                (or any other open lists of autocompleted values:*/
+                    closeAllLists();
+                });
+                a.appendChild(b);
+            }
+        }
+    });
+    /*execute a function presses a key on the keyboard:*/
+    input_elem.addEventListener("keydown", function (e) {
+        let x = document.getElementById(this.id + "autocomplete-list");
+        if (x) x = x.getElementsByTagName("div");
+        if (e.keyCode == 40) {
+            /*If the arrow DOWN key is pressed, increase the currentFocus variable:*/
+            currentFocus++;
+            /*and and make the current item more visible:*/
+            addActive(x);
+        } else if (e.keyCode == 38) {
+            //up
+            /*If the arrow UP key is pressed, decrease the currentFocus variable:*/
+            currentFocus--;
+            /*and and make the current item more visible:*/
+            addActive(x);
+        } else if (e.keyCode == 13) {
+            /*If the ENTER key is pressed, prevent the form from being submitted,*/
+            e.preventDefault();
+            if (currentFocus > -1) {
+                /*and simulate a click on the "active" item:*/
+                if (x) x[currentFocus].click();
+            }
+        }
+    });
+    function addActive(x) {
+        /*a function to classify an item as "active":*/
+        if (!x) return false;
+        /*start by removing the "active" class on all items:*/
+        removeActive(x);
+        if (currentFocus >= x.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = x.length - 1;
+        /*add class "autocomplete-active":*/
+        x[currentFocus].classList.add("autocomplete-active");
+    }
+    function removeActive(x) {
+        /*a function to remove the "active" class from all autocomplete items:*/
+        for (let item of x) {
+            item.classList.remove("autocomplete-active");
+        }
     }
 
-    const events = response.result.items;
-    if (!events || events.length == 0) {
-        document.getElementById("content").innerText = "No events found.";
-        return;
+    function closeAllLists(elmnt) {
+        /*close all autocomplete lists in the document, except the one passed as an argument:*/
+        let x = document.getElementsByClassName("autocomplete-items");
+        for (let item of x) {
+            if (elmnt != item && elmnt != input_elem) {
+                item.parentNode.removeChild(item);
+            }
+        }
     }
-    // Flatten to string to display
-    const output = events.reduce(
-        (str, event) =>
-            `${str}${event.summary} (${
-                event.start.dateTime || event.start.date
-            })\n`,
-        "Events:\n"
-    );
-    document.getElementById("content").innerText = output;
+    /*execute a function when someone clicks in the document:*/
+    document.addEventListener("click", function (e) {
+        closeAllLists(e.target);
+    });
 }
