@@ -617,7 +617,6 @@ async function listCalendarEvents(calendarId) {
         timeMin: new Date().toISOString(),
         showDeleted: false,
         singleEvents: true,
-        maxResults: 10,
         orderBy: "startTime",
     });
     const events = response.result.items;
