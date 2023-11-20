@@ -127,6 +127,12 @@
         </div>
 
         <fieldset id="calendar_events">
+            <button
+                id="copy_btn"
+                onclick="copyContents(document.getElementsByTagName('table')[0])"
+            >
+                📋
+            </button>
             <legend>Kommende begivenheder</legend>
             <table id="calendar_events_table"></table>
         </fieldset>

@@ -83,6 +83,37 @@ td {
     color: #ffffff;
 }
 
+/* #copy_btn {
+    position: relative;
+    left: -75px;
+    top: 75px;
+    border-radius: 5px;
+    font-size: 2em;
+    float: right;
+    margin: -50px;
+} */
+
+#copy_btn {
+    position: relative;
+    z-index: 1;
+    left: -75px;
+    top: 75px;
+    border-radius: 5px;
+    font-size: 2em;
+    float: right;
+    margin: -50px;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* highlight the row under the mouse*/
+tr:hover {
+    background-color: #ddd;
+    cursor: pointer;
+}
+
 /* override styles when printing */
 @media print {
     #main,
@@ -91,11 +122,11 @@ td {
     }
 
     table {
-        font-size: 1em;
+        font-size: 2.2em;
     }
 
-    a {
-        text-decoration: none;
-        color: black;
+    button,
+    .noprint {
+        display: none;
     }
 }

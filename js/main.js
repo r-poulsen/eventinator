@@ -622,15 +622,20 @@ async function listCalendarEvents(calendarId) {
         for (const event of events) {
             if (event.summary.match(/^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u)) {
                 const row = table.insertRow(-1);
-                const cell1 = row.insertCell(0);
-                const cell2 = row.insertCell(1);
-                const cell3 = row.insertCell(2);
-                const cell4 = row.insertCell(3);
+                row.addEventListener("click", () => {
+                    window.open(event.htmlLink);
+                });
+
+                const participants_cell = row.insertCell(0);
+                const datetime_cell = row.insertCell(1);
+                const eventname_cell = row.insertCell(2);
+                const location_cell = row.insertCell(3);
+
                 let matches = event.description.match(
                     /(?:Participants|Deltagere): (.+)/u
                 );
                 if (matches) {
-                    cell1.innerHTML = matches[1];
+                    participants_cell.innerHTML = matches[1];
 
                     let namesArray = matches[1].split(/,|og|and/);
 
@@ -658,23 +663,26 @@ async function listCalendarEvents(calendarId) {
                         endDate = new Date(event.end.date);
                     }
 
-                    console.log(startDate.getTime());
-                    console.log(endDate.getTime());
-
                     if (startDate.getTime() === endDate.getTime()) {
-                        cell2.innerHTML = `${startDate.toLocaleString("da-DK", {
-                            weekday: "short",
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                        })}`;
+                        datetime_cell.innerHTML = `${startDate.toLocaleString(
+                            "da-DK",
+                            {
+                                weekday: "short",
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                            }
+                        )}`;
                     } else {
-                        cell2.innerHTML = `${startDate.toLocaleString("da-DK", {
-                            weekday: "short",
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                        })} - ${endDate.toLocaleString("da-DK", {
+                        datetime_cell.innerHTML = `${startDate.toLocaleString(
+                            "da-DK",
+                            {
+                                weekday: "short",
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                            }
+                        )} - ${endDate.toLocaleString("da-DK", {
                             weekday: "short",
                             day: "numeric",
                             month: "short",
@@ -682,7 +690,7 @@ async function listCalendarEvents(calendarId) {
                         })}`;
                     }
                 } else {
-                    cell2.innerHTML = `${new Date(
+                    datetime_cell.innerHTML = `${new Date(
                         event.start.dateTime
                     ).toLocaleString("da-DK", {
                         weekday: "short",
@@ -697,15 +705,12 @@ async function listCalendarEvents(calendarId) {
                     /^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u
                 );
                 if (matches) {
-                    let a = document.createElement("a");
-                    a.href = event.htmlLink;
-                    a.target = "_new";
-                    a.innerHTML = matches[1];
-                    cell3.appendChild(a);
+                    eventname_cell.innerHTML = matches[1];
+                    autocompleteAdd("event_name", matches[1]);
                 }
-                autocompleteAdd("event_name", matches[1]);
+
                 if (event.location) {
-                    cell4.innerHTML = event.location;
+                    location_cell.innerHTML = event.location;
                     autocompleteAdd("location", event.location);
                 }
             }
@@ -900,4 +905,14 @@ function autocomplete(
     document.addEventListener("click", function (e) {
         closeAllLists(e.target);
     });
+}
+
+// Copy the table to the clipboard
+function copyContents(element) {
+    let range = document.createRange();
+    range.selectNode(element);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand("copy");
+    window.getSelection().removeAllRanges();
 }
