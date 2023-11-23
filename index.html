@@ -128,12 +128,12 @@
         <fieldset id="calendar_events">
             <button
                 id="copy_btn"
-                onclick="copyContents(document.getElementsByTagName('table')[0])"
+                onclick="copyContents(document.getElementById('calendar_events'))"
             >
                 📋
             </button>
             <legend>Kommende begivenheder</legend>
-            <table id="calendar_events_table"></table>
+            <div id="event_table_container"></div>
         </fieldset>
 
         <script

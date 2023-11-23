@@ -618,9 +618,36 @@ async function listCalendarEvents(calendarId) {
     const events = response.result.items;
     console.log("Upcoming events:");
     if (events.length > 0) {
-        const table = document.getElementById("calendar_events_table");
+        // const table = document.getElementById("calendar_events_table");
+        let year;
+
+        let previousYear;
+        let table;
         for (const event of events) {
             if (event.summary.match(/^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u)) {
+                if (event.start.date) {
+                    year = new Date(event.start.date).getFullYear();
+                } else {
+                    year = new Date(event.start.dateTime).getFullYear();
+                }
+
+                if (year !== previousYear) {
+                    const d = document.createElement("div");
+                    d.classList.add("year_header");
+                    d.innerText = year;
+                    document
+                        .getElementById("event_table_container")
+                        .appendChild(d);
+
+                    table = document.createElement("table");
+
+                    document
+                        .getElementById("event_table_container")
+                        .appendChild(table);
+
+                    previousYear = year;
+                }
+
                 const row = table.insertRow(-1);
                 row.addEventListener("click", () => {
                     window.open(event.htmlLink);
@@ -635,7 +662,7 @@ async function listCalendarEvents(calendarId) {
                     /(?:Participants|Deltagere): (.+)/u
                 );
                 if (matches) {
-                    participants_cell.innerHTML = matches[1];
+                    //participants_cell.innerHTML = matches[1];
 
                     let namesArray = matches[1].split(/,|og|and/);
 
@@ -652,6 +679,8 @@ async function listCalendarEvents(calendarId) {
                     cleanedNames.forEach(function (name) {
                         autocompleteAdd("participants", name);
                     });
+
+                    participants_cell.innerHTML = cleanedNames.join("<br>");
                 }
 
                 if (event.start.date) {
@@ -670,7 +699,6 @@ async function listCalendarEvents(calendarId) {
                                 weekday: "short",
                                 day: "numeric",
                                 month: "short",
-                                year: "numeric",
                             }
                         )}`;
                     } else {
@@ -680,13 +708,11 @@ async function listCalendarEvents(calendarId) {
                                 weekday: "short",
                                 day: "numeric",
                                 month: "short",
-                                year: "numeric",
                             }
                         )} - ${endDate.toLocaleString("da-DK", {
                             weekday: "short",
                             day: "numeric",
                             month: "short",
-                            year: "numeric",
                         })}`;
                     }
                 } else {
@@ -696,7 +722,6 @@ async function listCalendarEvents(calendarId) {
                         weekday: "short",
                         day: "numeric",
                         month: "short",
-                        year: "numeric",
                         hour: "numeric",
                         minute: "numeric",
                     })}`;

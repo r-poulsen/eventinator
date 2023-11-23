@@ -114,11 +114,30 @@ tr:hover {
     cursor: pointer;
 }
 
+div.year_header {
+    font-weight: bolder;
+    font-size: 2.5em;
+    text-align: center;
+    /*page-break-before: always;*/
+    background-color: white;
+    color: black;
+    padding: 1.2em;
+}
+
+/* class that targets every year_header that follows a table */
+table + div.year_header {
+    page-break-before: always;
+}
+
 /* override styles when printing */
 @media print {
     #main,
     legend {
         display: none;
+    }
+
+    fieldset {
+        border: none;
     }
 
     table {
