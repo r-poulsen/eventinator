@@ -601,6 +601,28 @@ async function listCalendars() {
     }
 }
 
+function filterNames() {
+    // Show or hide each <div> containing ${name} as innertext based on the checked state of the checkbox with the name participant_show_${name}
+    const checkboxes = document.querySelectorAll(
+        "#filter_names_container input"
+    );
+
+    for (const checkbox of checkboxes) {
+        const name = checkbox.id.substring(17);
+        const names = document.querySelectorAll(`.name`);
+        for (const nameElement of names) {
+            console.log(nameElement.innerText, name);
+            if (nameElement.innerText === name) {
+                if (checkbox.checked) {
+                    nameElement.style.display = "";
+                } else {
+                    nameElement.style.display = "none";
+                }
+            }
+        }
+    }
+}
+
 /**
  * Retrieves and lists upcoming calendar events.
  *
@@ -618,11 +640,12 @@ async function listCalendarEvents(calendarId) {
     const events = response.result.items;
     console.log("Upcoming events:");
     if (events.length > 0) {
-        // const table = document.getElementById("calendar_events_table");
         let year;
-
         let previousYear;
         let table;
+
+        // Map of all participant names
+        let namesMap = new Map();
         for (const event of events) {
             if (event.summary.match(/^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u)) {
                 if (event.start.date) {
@@ -662,11 +685,7 @@ async function listCalendarEvents(calendarId) {
                     /(?:Participants|Deltagere): (.+)/u
                 );
                 if (matches) {
-                    //participants_cell.innerHTML = matches[1];
-
                     let namesArray = matches[1].split(/,|og|and/);
-
-                    // Remove extra whitespaces and filter out empty strings
                     let cleanedNames = namesArray
                         .map(function (name) {
                             return name.trim();
@@ -677,10 +696,13 @@ async function listCalendarEvents(calendarId) {
 
                     // Add each name to the autocomplete list
                     cleanedNames.forEach(function (name) {
-                        autocompleteAdd("participants", name);
-                    });
+                        // autocompleteAdd("participants", name);
+                        participants_cell.innerHTML += `<div class="name">${name}</div>`;
 
-                    participants_cell.innerHTML = cleanedNames.join("<br>");
+                        cleanedNames.forEach(function (name) {
+                            namesMap.set(name, true);
+                        });
+                    });
                 }
 
                 if (event.start.date) {
@@ -740,6 +762,29 @@ async function listCalendarEvents(calendarId) {
                 }
             }
         }
+
+        // Add each participant to the autocomplete list
+        namesMap.forEach(function (value, key) {
+            autocompleteAdd("participants", key);
+
+            // Create a checkbox element for each name
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.id = `participant_show_${key}`;
+            checkbox.checked = true;
+            checkbox.addEventListener("change", filterNames);
+
+            document
+                .getElementById("filter_names_container")
+                .appendChild(checkbox);
+
+            const label = document.createElement("label");
+            label.htmlFor = checkbox.id;
+            label.textContent = key;
+            document
+                .getElementById("filter_names_container")
+                .appendChild(label);
+        });
     } else {
         console.log("No upcoming events found.");
     }
@@ -766,11 +811,14 @@ async function addCalendarEvent(event, calendarId, reloadEvents = false) {
         } else {
             console.log(`Event created:  ${response.htmlLink}`);
             if (reloadEvents) {
-                // Clear the table
-                const table = document.getElementById("calendar_events_table");
-                while (table.rows.length > 0) {
-                    table.deleteRow(-1);
+                // Clear all elements inside the event_table_container
+                const container = document.getElementById(
+                    "event_table_container"
+                );
+                while (container.firstChild) {
+                    container.removeChild(container.firstChild);
                 }
+
                 // Reload the table for all calendars
                 listCalendars();
             }

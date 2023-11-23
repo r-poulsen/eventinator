@@ -125,19 +125,28 @@ div.year_header {
 }
 
 /* class that targets every year_header that follows a table */
-table + div.year_header {
-    page-break-before: always;
+
+fieldset#calendar_events {
+    width: 98%;
+    height: 300px;
+    overflow: scroll;
 }
 
 /* override styles when printing */
 @media print {
     #main,
-    legend {
+    legend,
+    input,
+    label {
         display: none;
     }
 
     fieldset {
         border: none;
+    }
+
+    fieldset#calendar_events {
+        overflow: visible;
     }
 
     table {
@@ -147,5 +156,9 @@ table + div.year_header {
     button,
     .noprint {
         display: none;
+    }
+
+    table + div.year_header {
+        page-break-before: always;
     }
 }
