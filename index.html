@@ -25,143 +25,134 @@
         </div>
 
         <div id="main" style="visibility: hidden">
-            <div class="layout_container">
-                <fieldset id="options">
-                    <legend>Valg</legend>
-                    <span class="options">
-                        <input type="checkbox" id="purchase_reminder" checked />
-                        <label for="purchase_reminder">
-                            Husk mig på at købe billetter</label
-                        ><span id="ticket_calendar"
-                            >;
-                            <label for="ticket_calendar_select">Kalender</label>
-                            <select id="ticket_calendar_select"></select>
-                        </span>
+            <fieldset id="options">
+                <legend>Valg</legend>
+                <span class="options">
+                    <input type="checkbox" id="purchase_reminder" checked />
+                    <label for="purchase_reminder">
+                        Husk mig på at købe billetter</label
+                    ><span id="ticket_calendar"
+                        >;
+                        <label for="ticket_calendar_select">Kalender</label>
+                        <select id="ticket_calendar_select"></select>
                     </span>
+                </span>
 
-                    <span class="options">
-                        <input type="checkbox" id="calendar_entry" checked />
-                        <label for="calendar_entry"> Opret begivenheden</label
-                        ><span id="event_calendar"
-                            >;
-                            <label for="event_calendar_select">Kalender</label>
-                            <select id="event_calendar_select"></select
-                        ></span>
-                    </span>
-                </fieldset>
-            </div>
+                <span class="options">
+                    <input type="checkbox" id="calendar_entry" checked />
+                    <label for="calendar_entry"> Opret begivenheden</label
+                    ><span id="event_calendar"
+                        >;
+                        <label for="event_calendar_select">Kalender</label>
+                        <select id="event_calendar_select"></select
+                    ></span>
+                </span>
+            </fieldset>
 
-            <div class="layout_container" id="inputs">
-                <fieldset id="event">
-                    <legend>Begivenhed</legend>
+            <fieldset id="event">
+                <legend>Begivenhed</legend>
 
-                    <span id="event_title">
-                        <label for="event_type_sel">Type</label>
-                        <select id="event_type_sel">
-                            <option value="concert">🎶 Koncert</option>
-                            <option value="movie">🎥 Film</option>
-                            <option value="comedy">😀 Comedy</option>
-                            <option value="sports">🏈 Sport</option>
-                            <option value="theater">🎭 Teater</option>
-                            <option value="festival">🎉 Festival</option>
-                            <option value="other">🎫 Andet</option>
-                        </select>
-                    </span>
+                <span id="event_title">
+                    <label for="event_type_sel">Type</label>
+                    <select id="event_type_sel">
+                        <option value="concert">🎶 Koncert</option>
+                        <option value="movie">🎥 Film</option>
+                        <option value="comedy">😀 Comedy</option>
+                        <option value="sports">🏈 Sport</option>
+                        <option value="theater">🎭 Teater</option>
+                        <option value="festival">🎉 Festival</option>
+                        <option value="other">🎫 Andet</option>
+                    </select>
+                </span>
 
-                    <span>
-                        <label for="event_name">Navn*</label>
-                        <input
-                            id="event_name"
-                            type="text"
-                            placeholder="Event name"
-                        />
-                    </span>
+                <span>
+                    <label for="event_name">Navn*</label>
+                    <input
+                        id="event_name"
+                        type="text"
+                        placeholder="Event name"
+                    />
+                </span>
 
-                    <span>
-                        <div id="Participants"></div>
-                    </span>
-                </fieldset>
+                <span>
+                    <div id="Participants"></div>
+                </span>
+            </fieldset>
 
-                <fieldset id="ticket">
-                    <legend>Billet-salg</legend>
-                    <span>
-                        <label for="ticket_dt">Start*</label>
-                        <input type="datetime-local" id="ticket_dt" />
+            <fieldset id="ticket">
+                <legend>Billet-salg</legend>
+                <span>
+                    <label for="ticket_dt">Start*</label>
+                    <input type="datetime-local" id="ticket_dt" />
 
-                        <label for="ticket_url">URL</label>
-                        <input type="url" id="ticket_url" />
+                    <label for="ticket_url">URL</label>
+                    <input type="url" id="ticket_url" />
 
-                        <label for="ticket_notes">Noter</label>
-                        <input type="url" id="ticket_notes" />
-                    </span>
-                </fieldset>
+                    <label for="ticket_notes">Noter</label>
+                    <input type="url" id="ticket_notes" />
+                </span>
+            </fieldset>
 
-                <fieldset id="event_time">
-                    <legend>Tid og sted</legend>
-                    <span>
-                        <label for="event_dt">Start*</label>
-                        <input type="datetime-local" id="event_dt" />
-                    </span>
+            <fieldset id="event_time">
+                <legend>Tid og sted</legend>
+                <span>
+                    <label for="event_dt">Start*</label>
+                    <input type="datetime-local" id="event_dt" />
+                </span>
 
-                    <span id="duration_hours_elements"
-                        ><label for="event_duration_hours"
-                            >Varighed, timer</label
-                        >
-                        <input
-                            type="number"
-                            id="event_duration_hours"
-                            min="1"
-                            value="3"
-                        />
-                    </span>
-                    <span id="duration_days_elements" style="display: none"
-                        ><label for="event_duration_days">Varighed, dage</label>
-                        <input
-                            type="number"
-                            id="event_duration_days"
-                            min="1"
-                            value="3"
-                        />
-                    </span>
-                    <div>
-                        <input
-                            type="checkbox"
-                            id="all_day"
-                            onchange="toggleDurationInputs()"
-                        />
-                        <label for="all_day"> Heldags-begivenhed </label>
-                    </div>
+                <span id="duration_hours_elements"
+                    ><label for="event_duration_hours">Varighed, timer</label>
+                    <input
+                        type="number"
+                        id="event_duration_hours"
+                        min="1"
+                        value="3"
+                    />
+                </span>
+                <span id="duration_days_elements" style="display: none"
+                    ><label for="event_duration_days">Varighed, dage</label>
+                    <input
+                        type="number"
+                        id="event_duration_days"
+                        min="1"
+                        value="3"
+                    />
+                </span>
+                <div>
+                    <input
+                        type="checkbox"
+                        id="all_day"
+                        onchange="toggleDurationInputs()"
+                    />
+                    <label for="all_day"> Heldags-begivenhed </label>
+                </div>
 
-                    <span>
-                        <label for="location">Lokation</label>
-                        <input id="location" />
-                    </span>
-                </fieldset>
-            </div>
-            <div class="layout_container">
+                <span>
+                    <label for="location">Lokation</label>
+                    <input id="location" />
+                </span>
+            </fieldset>
+
+            <div id="button_container">
                 <button class="large_button" id="add_btn" disabled>Knap</button>
             </div>
 
-            <div class="layout_container">
-                <fieldset id="calendar_events">
-                    <button
-                        id="copy_btn"
-                        onclick="copyContents(document.getElementById('calendar_events'))"
-                    >
-                        📋
-                    </button>
-                    <legend>Kommende begivenheder</legend>
-                    <div id="event_table_container"></div>
-                </fieldset>
-            </div>
+            <fieldset id="calendar_events">
+                <button
+                    id="copy_btn"
+                    onclick="copyContents(document.getElementById('calendar_events'))"
+                >
+                    📋
+                </button>
+                <legend>Kommende begivenheder</legend>
+                <div id="event_table_container"></div>
+            </fieldset>
 
-            <div class="layout_container">
-                <fieldset id="filter_names">
-                    <legend>Filter</legend>
+            <fieldset id="filter_names">
+                <legend>Filter</legend>
 
-                    <div id="filter_names_container"></div>
-                </fieldset>
-            </div>
+                <div id="filter_names_container"></div>
+            </fieldset>
         </div>
 
         <script
