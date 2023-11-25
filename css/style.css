@@ -137,6 +137,7 @@ div#button_container {
 fieldset#calendar_events {
     grid-area: calendar_events;
     overflow: scroll;
+    min-height: 200px;
 }
 
 fieldset#filter_names {
@@ -148,6 +149,7 @@ div#main {
     display: grid;
     grid-gap: 1em;
     grid-template-rows: 60px 200px 40px auto 60px;
+
     grid-template-areas:
         "options            options             options"
         "event              ticket              event_time"
@@ -156,6 +158,33 @@ div#main {
         "filter_names       filter_names        filter_names";
     width: 100svw;
     height: 100svh;
+}
+
+@media only screen and (max-width: 800px) {
+    /* body {
+        background-color: lightblue;
+    } */
+
+    div#main {
+        display: grid;
+        grid-gap: 1em;
+        grid-template-rows: 90px 200px 200px 200px 40px 200px 60px;
+
+        grid-template-areas:
+            "options"
+            "event"
+            "ticket"
+            "event_time"
+            "button_container"
+            "calendar_events"
+            "filter_names";
+        width: 100svw;
+        height: 100svh;
+    }
+
+    div#button_container {
+        grid-column: span 1;
+    }
 }
 
 @media print {
