@@ -4,7 +4,12 @@ body {
     font-family: Arial, sans-serif;
     font-size: 0.7em;
     color: #ccc;
-    background-color: #222;
+    /* background-color: #222; */
+
+    background-image: url("../gfx/background-01.jpeg");
+    /* background-repeat: repeat-x; */
+    background-position: center;
+    background-size: cover;
 }
 
 input[type="datetime-local"] {
@@ -12,7 +17,6 @@ input[type="datetime-local"] {
 }
 
 span.options {
-    /* width: 30%; */
     white-space: nowrap;
 }
 
@@ -106,7 +110,7 @@ div.year_header {
 fieldset {
     border: 0.5px solid #aaa;
     border-radius: 5px;
-    background-color: #333;
+    /* background-color: #333; */
     padding: 5px;
     margin: 8px;
 }
@@ -145,7 +149,6 @@ fieldset#filter_names {
 }
 
 div#main {
-    /* background-color: green; */
     display: grid;
     grid-gap: 1em;
     grid-template-rows: 60px 200px 40px auto 60px;
@@ -161,14 +164,10 @@ div#main {
 }
 
 @media only screen and (max-width: 800px) {
-    /* body {
-        background-color: lightblue;
-    } */
-
     div#main {
         display: grid;
         grid-gap: 1em;
-        grid-template-rows: 90px 200px 200px 200px 40px 200px 60px;
+        grid-template-rows: 90px 200px 200px 200px 40px auto 60px;
 
         grid-template-areas:
             "options"
@@ -184,35 +183,5 @@ div#main {
 
     div#button_container {
         grid-column: span 1;
-    }
-}
-
-@media print {
-    #main,
-    legend,
-    input,
-    label {
-        display: none;
-    }
-
-    fieldset {
-        border: none;
-    }
-
-    fieldset#calendar_events {
-        overflow: visible;
-    }
-
-    table {
-        font-size: 2.2em;
-    }
-
-    button,
-    .noprint {
-        display: none;
-    }
-
-    table + div.year_header {
-        page-break-before: always;
     }
 }

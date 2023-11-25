@@ -1,0 +1,40 @@
+body {
+    background-color: white;
+}
+
+fieldset,
+legend,
+button {
+    display: none;
+}
+
+div.year_header {
+    font-weight: bolder;
+    font-size: 2.5em;
+    text-align: center;
+    padding-bottom: 0.4em;
+    border-top: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    border-collapse: collapse;
+}
+fieldset#calendar_events {
+    overflow: visible;
+    display: table !important;
+    border: none;
+}
+
+table {
+    font-size: 1.3em;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td {
+    padding: 0.5em;
+    border: 1px solid #ccc;
+}
+
+table + div.year_header {
+    page-break-before: always;
+}
