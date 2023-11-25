@@ -321,6 +321,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     autocomplete("event_name");
     autocomplete("location");
+
+    // set the value of the checkbox "automatic_authorize" from the localstorage item of the same name
+
+    document.getElementById("automatic_authorize").checked =
+        localStorage.getItem("automatic_authorize");
 });
 
 function enable_disable_add_button() {
@@ -501,7 +506,9 @@ function googeApisLoaded() {
     if (gapiInited && gisInited) {
         // document.getElementById("authorize").style.visibility = "visible";
         document.getElementById("authorize").style.display = "";
-        authenticate();
+        if (localStorage.getItem("automatic_authorize")) {
+            authenticate();
+        }
     }
 }
 
