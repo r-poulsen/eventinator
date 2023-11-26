@@ -1,4 +1,6 @@
-let listInput = null;
+let app = null;
+
+// let listInput = null;
 
 // Discovery doc URL for APIs used by the quickstart
 const DISCOVERY_DOCS = [
@@ -121,211 +123,395 @@ class ListInput {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Initialize the glorious Participants input
-    listInput = new ListInput("Participants", "Deltager", "Deltagere");
+class EventList {
+    // The list of events. Displayed in a series of tables with a year header
+    constructor() {
+        this.parentElement = document.getElementById("event_table_container");
+        this.events = [];
+    }
 
-    // Set the date and time of the ticket and event inputs to something somewhat sensible
-    setDateTimeInput("ticket_dt", 1, 10);
-    setDateTimeInput("event_dt", 30, 20);
+    addEvent(event) {
+        this.events.push(event);
+    }
 
-    // Add enable_disable_inputs() as an event listener when any of these checkboxes are clicked
+    render() {
+        let year = null;
+        let previousYear = null;
 
-    ["purchase_reminder", "calendar_entry"].forEach((checkbox_id) => {
-        document
-            .getElementById(checkbox_id)
-            .addEventListener("click", enable_disable_inputs);
-    });
+        // Render the list of events into year headers and tables, sorted by the event date
 
-    // Add enable_disable_add_button() as an event listener when any of these inputs are changed
-    [
-        "purchase_reminder",
-        "calendar_entry",
-        "event_name",
-        "ticket_dt",
-        "event_dt",
-    ].forEach((input_id) => {
-        document
-            .getElementById(input_id)
-            .addEventListener("input", enable_disable_add_button);
-    });
-
-    enable_disable_inputs();
-
-    document.getElementById("add_btn").addEventListener("click", () => {
-        //
-        try {
-            const names = Array.from(
-                document.querySelectorAll("#Participants_list_container input")
-            ).map((input) => input.value || input.placeholder);
-
-            let nameString;
-            switch (names.length) {
-                case 0:
-                    nameString = "";
-                    break;
-                case 1:
-                    nameString = names[0];
-                    break;
-                case 2:
-                    nameString = names.join(" og ");
-                    break;
-                default:
-                    nameString = `${names.slice(0, -1).join(", ")} og ${
-                        names[names.length - 1]
-                    }`;
-            }
-
-            let tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-            if (document.getElementById("purchase_reminder").checked) {
-                let noun = names.length > 1 ? "billetter" : "billet";
-
-                const reminder = {
-                    summary: `Køb ${noun} til ${
-                        document.getElementById("event_name").value
-                    }`,
-                    description: `${names.length} ${noun}; Til ${nameString}${
-                        document.getElementById("ticket_url").value
-                            ? "\n\n" +
-                              document.getElementById("ticket_url").value
-                            : ""
-                    }${
-                        document.getElementById("ticket_notes").value
-                            ? "\n\n" +
-                              document.getElementById("ticket_notes").value
-                            : ""
-                    }`,
-                    start: {
-                        dateTime: new Date(
-                            document.getElementById("ticket_dt").value
-                        ).toISOString(),
-                        timeZone: tz,
-                    },
-                    end: {
-                        dateTime: new Date(
-                            Date.parse(
-                                document.getElementById("ticket_dt").value
-                            ) +
-                                15 * 60 * 1000
-                        ).toISOString(),
-                        timeZone: tz,
-                    },
-                    reminders: {
-                        useDefault: false,
-                        overrides: [
-                            { method: "email", minutes: 30 },
-                            { method: "popup", minutes: 10 },
-                        ],
-                    },
-                };
-
-                console.log("Adding reminder");
-                console.log(reminder);
-                // Save the id of the calendar in a localstorage item
-                // so we can use it later
-                localStorage.setItem(
-                    "latest_used_reminder_calendar",
-                    document.getElementById("ticket_calendar_select").value
-                );
-                addCalendarEvent(
-                    reminder,
-                    document.getElementById("ticket_calendar_select").value
-                );
-            }
-
-            if (document.getElementById("calendar_entry").checked) {
-                let selectElement = document.getElementById("event_type_sel");
-                let selectedOption =
-                    selectElement.options[selectElement.selectedIndex];
-
-                let start = {
-                    timeZone: tz,
-                };
-                let end = {
-                    timeZone: tz,
-                };
-                if (document.getElementById("all_day").checked) {
-                    start["date"] = new Date(
-                        document.getElementById("event_dt").value
-                    )
-                        .toISOString()
-                        .slice(0, 10);
-                    end["date"] = new Date(
-                        Date.parse(document.getElementById("event_dt").value) +
-                            document.getElementById("event_duration_days")
-                                .value *
-                                24 *
-                                60 *
-                                60 *
-                                1000
-                    )
-                        .toISOString()
-                        .slice(0, 10);
-                } else {
-                    start["dateTime"] = new Date(
-                        document.getElementById("event_dt").value
-                    ).toISOString();
-                    end["dateTime"] = new Date(
-                        Date.parse(document.getElementById("event_dt").value) +
-                            document.getElementById("event_duration_hours")
-                                .value *
-                                60 *
-                                60 *
-                                1000
-                    ).toISOString();
-                }
-                const event = {
-                    summary: `${selectedOption.textContent}: ${
-                        document.getElementById("event_name").value
-                    }`,
-                    location: document.getElementById("location").value,
-                    description: `Deltagere: ${nameString}`,
-                    start: start,
-                    end: end,
-                };
-
-                console.log("Adding event");
-                console.log(event);
-                localStorage.setItem(
-                    "latest_used_event_calendar",
-                    document.getElementById("event_calendar_select").value
-                );
-                addCalendarEvent(
-                    event,
-                    document.getElementById("event_calendar_select").value,
-                    true
-                );
-            }
-        } catch (error) {
-            // Don't know if this works
-            console.log(error);
-            localStorage.removeItem("access_token");
-            gapi.client.setToken(null);
-            document.getElementById("add_btn").click();
-        }
-        autocompleteAdd(
-            "event_name",
-            document.getElementById("event_name").value
-        );
-        autocompleteAdd("location", document.getElementById("location").value);
-
-        // add each participant to the autocomplete list
-        Array.from(
-            document.querySelectorAll("#Participants_list_container input")
-        ).forEach((input) => {
-            autocompleteAdd("participants", input.value);
-            localStorage.setItem(`${input.id}_autocomplete`, input.value);
+        this.events.sort((a, b) => {
+            const dateA = new Date(a.start.dateTime || a.start.date);
+            const dateB = new Date(b.start.dateTime || b.start.date);
+            return dateA - dateB;
         });
-    });
 
-    autocomplete("event_name");
-    autocomplete("location");
+        // Iterate over the sorted list of events
+        for (const event of this.events) {
+            // Render the event details
+            const eventDate = event.start.dateTime || event.start.date;
+            if (event.start.date) {
+                year = new Date(event.start.date).getFullYear();
+            } else {
+                year = new Date(event.start.dateTime).getFullYear();
+            }
 
-    // set the value of the checkbox "automatic_authorize" from the localstorage item of the same name
+            if (year !== previousYear) {
+                const d = document.createElement("div");
+                d.classList.add("year_header");
+                d.innerText = year;
+                this.parentElement.appendChild(d);
 
-    document.getElementById("automatic_authorize").checked =
-        localStorage.getItem("automatic_authorize");
+                this.table = document.createElement("table");
+
+                this.parentElement.appendChild(this.table);
+
+                previousYear = year;
+            }
+
+            const row = this.table.insertRow(-1);
+            row.addEventListener("click", () => {
+                window.open(event.htmlLink);
+            });
+
+            const participants_cell = row.insertCell(0);
+            const datetime_cell = row.insertCell(1);
+            const eventname_cell = row.insertCell(2);
+            const location_cell = row.insertCell(3);
+
+            let matches = event.description.match(
+                /(?:Participants|Deltagere): (.+)/u
+            );
+            if (matches) {
+                matches[1]
+                    .split(/,|og|and/)
+                    .map(function (name) {
+                        return name.trim();
+                    })
+                    .filter(function (name) {
+                        return name !== "";
+                    })
+                    .forEach(function (name) {
+                        const d = document.createElement("div");
+                        d.classList.add("name");
+                        d.innerText = name;
+                        participants_cell.appendChild(d);
+                    });
+            }
+
+            if (event.start.date) {
+                let startDate = new Date(event.start.date);
+                let endDate = new Date(event.end.date);
+                endDate.setDate(endDate.getDate() - 1);
+
+                if (endDate < startDate) {
+                    endDate = new Date(event.end.date);
+                }
+
+                if (startDate.getTime() === endDate.getTime()) {
+                    datetime_cell.innerHTML = `${startDate.toLocaleString(
+                        "da-DK",
+                        {
+                            weekday: "short",
+                            day: "numeric",
+                            month: "short",
+                        }
+                    )}`;
+                } else {
+                    datetime_cell.innerHTML = `${startDate.toLocaleString(
+                        "da-DK",
+                        {
+                            weekday: "short",
+                            day: "numeric",
+                            month: "short",
+                        }
+                    )} - ${endDate.toLocaleString("da-DK", {
+                        weekday: "short",
+                        day: "numeric",
+                        month: "short",
+                    })}`;
+                }
+            } else {
+                datetime_cell.innerHTML = `${new Date(
+                    event.start.dateTime
+                ).toLocaleString("da-DK", {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                    hour: "numeric",
+                    minute: "numeric",
+                })}`;
+            }
+
+            matches = event.summary.match(/^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u);
+            if (matches) {
+                eventname_cell.innerHTML = matches[1];
+            }
+
+            if (event.location) {
+                location_cell.innerHTML = event.location;
+            }
+        }
+    }
+
+    clearList() {
+        // Clears the list of events
+        this.events = [];
+    }
+}
+
+class EventinatorApp {
+    constructor() {
+        // console.debug("EventinatorApp constructor");
+
+        this.eventList = new EventList();
+
+        // load https://apis.google.com/js/api.js" asyncronously and call gapiLoaded() when it's loaded
+        const script = document.createElement("script");
+        script.src = "https://apis.google.com/js/api.js";
+        script.async = true;
+        script.defer = true;
+        script.onload = gapiLoaded;
+        document.head.appendChild(script);
+
+        // load https://accounts.google.com/gsi/client" asyncronously and call gisLoaded() when it's loaded
+        const script2 = document.createElement("script");
+        script2.src = "https://accounts.google.com/gsi/client";
+        script2.async = true;
+        script2.defer = true;
+        script2.onload = gisLoaded;
+        document.head.appendChild(script2);
+
+        // Initialize the list input for participants
+        this.listInput = new ListInput("Participants", "Deltager", "Deltagere");
+
+        // Set the date and time of the ticket and event inputs to something somewhat sensible
+
+        // TODO: These should be classes
+        setDateTimeInput("ticket_dt", 1, 10);
+        setDateTimeInput("event_dt", 30, 20);
+
+        // Add enable_disable_inputs() as an event listener when any of these checkboxes are clicked
+        // TODO: These should be classes
+        ["purchase_reminder", "calendar_entry"].forEach((checkbox_id) => {
+            document
+                .getElementById(checkbox_id)
+                .addEventListener("click", enable_disable_inputs);
+        });
+
+        // Add enable_disable_add_button() as an event listener when any of these inputs are changed
+        [
+            "purchase_reminder",
+            "calendar_entry",
+            "event_name",
+            "ticket_dt",
+            "event_dt",
+        ].forEach((input_id) => {
+            document
+                .getElementById(input_id)
+                .addEventListener("input", enable_disable_add_button);
+        });
+
+        enable_disable_inputs();
+
+        document.getElementById("add_btn").addEventListener("click", () => {
+            //
+            try {
+                const names = Array.from(
+                    document.querySelectorAll(
+                        "#Participants_list_container input"
+                    )
+                ).map((input) => input.value || input.placeholder);
+
+                let nameString;
+                switch (names.length) {
+                    case 0:
+                        nameString = "";
+                        break;
+                    case 1:
+                        nameString = names[0];
+                        break;
+                    case 2:
+                        nameString = names.join(" og ");
+                        break;
+                    default:
+                        nameString = `${names.slice(0, -1).join(", ")} og ${
+                            names[names.length - 1]
+                        }`;
+                }
+
+                let tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+                if (document.getElementById("purchase_reminder").checked) {
+                    let noun = names.length > 1 ? "billetter" : "billet";
+
+                    const reminder = {
+                        summary: `Køb ${noun} til ${
+                            document.getElementById("event_name").value
+                        }`,
+                        description: `${
+                            names.length
+                        } ${noun}; Til ${nameString}${
+                            document.getElementById("ticket_url").value
+                                ? "\n\n" +
+                                  document.getElementById("ticket_url").value
+                                : ""
+                        }${
+                            document.getElementById("ticket_notes").value
+                                ? "\n\n" +
+                                  document.getElementById("ticket_notes").value
+                                : ""
+                        }`,
+                        start: {
+                            dateTime: new Date(
+                                document.getElementById("ticket_dt").value
+                            ).toISOString(),
+                            timeZone: tz,
+                        },
+                        end: {
+                            dateTime: new Date(
+                                Date.parse(
+                                    document.getElementById("ticket_dt").value
+                                ) +
+                                    15 * 60 * 1000
+                            ).toISOString(),
+                            timeZone: tz,
+                        },
+                        reminders: {
+                            useDefault: false,
+                            overrides: [
+                                { method: "email", minutes: 30 },
+                                { method: "popup", minutes: 10 },
+                            ],
+                        },
+                    };
+
+                    console.log("Adding reminder");
+                    console.log(reminder);
+                    // Save the id of the calendar in a localstorage item
+                    // so we can use it later
+                    localStorage.setItem(
+                        "latest_used_reminder_calendar",
+                        document.getElementById("ticket_calendar_select").value
+                    );
+                    try {
+                        addCalendarEvent(
+                            reminder,
+                            document.getElementById("ticket_calendar_select")
+                                .value
+                        );
+                    } catch (error) {
+                        console.log(error);
+                    }
+                }
+
+                if (document.getElementById("calendar_entry").checked) {
+                    let selectElement =
+                        document.getElementById("event_type_sel");
+                    let selectedOption =
+                        selectElement.options[selectElement.selectedIndex];
+
+                    let start = {
+                        timeZone: tz,
+                    };
+                    let end = {
+                        timeZone: tz,
+                    };
+                    if (document.getElementById("all_day").checked) {
+                        start["date"] = new Date(
+                            document.getElementById("event_dt").value
+                        )
+                            .toISOString()
+                            .slice(0, 10);
+                        end["date"] = new Date(
+                            Date.parse(
+                                document.getElementById("event_dt").value
+                            ) +
+                                document.getElementById("event_duration_days")
+                                    .value *
+                                    24 *
+                                    60 *
+                                    60 *
+                                    1000
+                        )
+                            .toISOString()
+                            .slice(0, 10);
+                    } else {
+                        start["dateTime"] = new Date(
+                            document.getElementById("event_dt").value
+                        ).toISOString();
+                        end["dateTime"] = new Date(
+                            Date.parse(
+                                document.getElementById("event_dt").value
+                            ) +
+                                document.getElementById("event_duration_hours")
+                                    .value *
+                                    60 *
+                                    60 *
+                                    1000
+                        ).toISOString();
+                    }
+                    const event = {
+                        summary: `${selectedOption.textContent}: ${
+                            document.getElementById("event_name").value
+                        }`,
+                        location: document.getElementById("location").value,
+                        description: `Deltagere: ${nameString}`,
+                        start: start,
+                        end: end,
+                    };
+
+                    console.log("Adding event");
+                    console.log(event);
+                    localStorage.setItem(
+                        "latest_used_event_calendar",
+                        document.getElementById("event_calendar_select").value
+                    );
+                    addCalendarEvent(
+                        event,
+                        document.getElementById("event_calendar_select").value,
+                        true
+                    );
+                }
+            } catch (error) {
+                // Don't know if this works
+                console.log(error);
+                localStorage.removeItem("access_token");
+                gapi.client.setToken(null);
+                document.getElementById("add_btn").click();
+            }
+            autocompleteAdd(
+                "event_name",
+                document.getElementById("event_name").value
+            );
+            autocompleteAdd(
+                "location",
+                document.getElementById("location").value
+            );
+
+            // add each participant to the autocomplete list
+            Array.from(
+                document.querySelectorAll("#Participants_list_container input")
+            ).forEach((input) => {
+                autocompleteAdd("participants", input.value);
+                localStorage.setItem(`${input.id}_autocomplete`, input.value);
+            });
+        });
+
+        autocomplete("event_name");
+        autocomplete("location");
+
+        // set the value of the checkbox "automatic_authorize" from the localstorage item of the same name
+
+        document.getElementById("automatic_authorize").checked =
+            localStorage.getItem("automatic_authorize");
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // console.debug("DOMContentLoaded");
+    // Initialize the glorious Eventinator app
+    app = new EventinatorApp();
 });
 
 function enable_disable_add_button() {
@@ -469,6 +655,7 @@ function enableElementsInContainer(id, enable = true) {
  * Callback after api.js is loaded.
  */
 function gapiLoaded() {
+    // console.debug("gapiLoaded");
     gapi.load("client", initializeGapiClient);
 }
 
@@ -477,6 +664,7 @@ function gapiLoaded() {
  * discovery doc to initialize the API.
  */
 async function initializeGapiClient() {
+    // console.debug("initializeGapiClient");
     await gapi.client.init({
         //apiKey: API_KEY,
         discoveryDocs: DISCOVERY_DOCS,
@@ -489,6 +677,7 @@ async function initializeGapiClient() {
  * Callback after Google Identity Services are loaded.
  */
 function gisLoaded() {
+    // console.debug("gisLoaded");
     tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
@@ -504,7 +693,6 @@ function gisLoaded() {
  */
 function googeApisLoaded() {
     if (gapiInited && gisInited) {
-        // document.getElementById("authorize").style.visibility = "visible";
         document.getElementById("authorize").style.display = "";
         if (localStorage.getItem("automatic_authorize")) {
             authenticate();
@@ -533,7 +721,6 @@ async function authenticate() {
     };
 
     if (localStorage.getItem("access_token") !== null) {
-        console.log("Using existing access token");
         gapi.client.setToken({
             access_token: localStorage.getItem("access_token"),
         });
@@ -547,7 +734,7 @@ async function authenticate() {
             } catch (error) {
                 // Any errors encountered here are most likely due to an invalid access token,
                 // so we delete it and try again
-                console.log(error);
+                console.debug(`${error.code}: ${error.message}`);
                 localStorage.removeItem("access_token");
                 gapi.client.setToken(null);
                 await authenticate();
@@ -571,7 +758,10 @@ async function authenticate() {
  * @returns {Promise<void>} A promise that resolves when the calendars are listed.
  */
 async function listCalendars() {
-    const response = await gapi.client.calendar.calendarList.list();
+    // console.debug("listCalendars");
+
+    app.eventList.clearList();
+
     const ticketElement = document.getElementById("ticket_calendar_select");
     const eventElement = document.getElementById("event_calendar_select");
 
@@ -582,16 +772,30 @@ async function listCalendars() {
     while (eventElement.options.length > 0) {
         eventElement.remove(0);
     }
-    response.result.items.forEach((calendar) => {
-        if (calendar.accessRole !== "reader") {
-            const optionElement = document.createElement("option");
-            optionElement.value = calendar.id;
-            optionElement.text = calendar.summary;
-            eventElement.add(optionElement);
-            ticketElement.add(optionElement.cloneNode(true));
-        }
-        listCalendarEvents(calendar.id);
-    });
+
+    await gapi.client.calendar.calendarList
+        .list()
+        .then(async (response) => {
+            // console.debug("calendarList start");
+
+            const promises = response.result.items.map(async (calendar) => {
+                // console.debug("1");
+                if (calendar.accessRole !== "reader") {
+                    const optionElement = document.createElement("option");
+                    optionElement.value = calendar.id;
+                    optionElement.text = calendar.summary;
+                    eventElement.add(optionElement);
+                    ticketElement.add(optionElement.cloneNode(true));
+                }
+
+                return listCalendarEvents(calendar.id);
+            });
+
+            return Promise.all(promises); // Wait for all promises to resolve
+        })
+        .then(() => {
+            app.eventList.render();
+        });
 
     // Preselect the calendar based on the ID stored in localStorage
     const latestEventCalendarId = localStorage.getItem(
@@ -637,164 +841,85 @@ function filterNames() {
  * @returns {Promise<void>} - A promise that resolves when the events are listed.
  */
 async function listCalendarEvents(calendarId) {
-    const response = await gapi.client.calendar.events.list({
-        calendarId: calendarId,
-        timeMin: new Date().toISOString(),
-        showDeleted: false,
-        singleEvents: true,
-        orderBy: "startTime",
-    });
-    const events = response.result.items;
-    console.log("Upcoming events:");
-    if (events.length > 0) {
-        let year;
-        let previousYear;
-        let table;
+    await gapi.client.calendar.events
+        .list({
+            calendarId: calendarId,
+            timeMin: new Date().toISOString(),
+            showDeleted: false,
+            singleEvents: true,
+            orderBy: "startTime",
+        })
+        .then((response) => {
+            if (response.result.items.length > 0) {
+                // While adding events to the eventlist, also build a map of all participant names
+                // so we can add them to the autocomplete list and the name filter checkboxes.
+                let namesMap = new Map();
+                for (const event of response.result.items) {
+                    if (
+                        event.summary.match(/^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u)
+                    ) {
+                        app.eventList.addEvent(event);
 
-        // Map of all participant names
-        let namesMap = new Map();
-        for (const event of events) {
-            if (event.summary.match(/^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u)) {
-                if (event.start.date) {
-                    year = new Date(event.start.date).getFullYear();
-                } else {
-                    year = new Date(event.start.dateTime).getFullYear();
+                        let matches = event.description.match(
+                            /(?:Participants|Deltagere): (.+)/u
+                        );
+                        if (matches) {
+                            let namesArray = matches[1].split(/,|og|and/);
+                            let cleanedNames = namesArray
+                                .map(function (name) {
+                                    return name.trim();
+                                })
+                                .filter(function (name) {
+                                    return name !== "";
+                                });
+
+                            cleanedNames.forEach(function (name) {
+                                cleanedNames.forEach(function (name) {
+                                    namesMap.set(name, true);
+                                });
+                            });
+                        }
+
+                        matches = event.summary.match(
+                            /^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u
+                        );
+                        if (matches) {
+                            autocompleteAdd("event_name", matches[1]);
+                        }
+
+                        if (event.location) {
+                            autocompleteAdd("location", event.location);
+                        }
+                    }
                 }
 
-                if (year !== previousYear) {
-                    const d = document.createElement("div");
-                    d.classList.add("year_header");
-                    d.innerText = year;
-                    document
-                        .getElementById("event_table_container")
-                        .appendChild(d);
+                // Add each participant to the autocomplete list
+                namesMap.forEach(function (value, key) {
+                    autocompleteAdd("participants", key);
+                    namesMap.forEach(function (_, key) {
+                        const id = `participant_show_${key}`;
+                        if (!document.getElementById(id)) {
+                            const checkbox = document.createElement("input");
+                            checkbox.type = "checkbox";
+                            checkbox.id = id;
+                            checkbox.checked = true;
+                            checkbox.addEventListener("change", filterNames);
 
-                    table = document.createElement("table");
+                            document
+                                .getElementById("filter_names_container")
+                                .appendChild(checkbox);
 
-                    document
-                        .getElementById("event_table_container")
-                        .appendChild(table);
-
-                    previousYear = year;
-                }
-
-                const row = table.insertRow(-1);
-                row.addEventListener("click", () => {
-                    window.open(event.htmlLink);
-                });
-
-                const participants_cell = row.insertCell(0);
-                const datetime_cell = row.insertCell(1);
-                const eventname_cell = row.insertCell(2);
-                const location_cell = row.insertCell(3);
-
-                let matches = event.description.match(
-                    /(?:Participants|Deltagere): (.+)/u
-                );
-                if (matches) {
-                    let namesArray = matches[1].split(/,|og|and/);
-                    let cleanedNames = namesArray
-                        .map(function (name) {
-                            return name.trim();
-                        })
-                        .filter(function (name) {
-                            return name !== "";
-                        });
-
-                    // Add each name to the autocomplete list
-                    cleanedNames.forEach(function (name) {
-                        // autocompleteAdd("participants", name);
-                        participants_cell.innerHTML += `<div class="name">${name}</div>`;
-
-                        cleanedNames.forEach(function (name) {
-                            namesMap.set(name, true);
-                        });
+                            const label = document.createElement("label");
+                            label.htmlFor = checkbox.id;
+                            label.textContent = key;
+                            document
+                                .getElementById("filter_names_container")
+                                .appendChild(label);
+                        }
                     });
-                }
-
-                if (event.start.date) {
-                    let startDate = new Date(event.start.date);
-                    let endDate = new Date(event.end.date);
-                    endDate.setDate(endDate.getDate() - 1);
-
-                    if (endDate < startDate) {
-                        endDate = new Date(event.end.date);
-                    }
-
-                    if (startDate.getTime() === endDate.getTime()) {
-                        datetime_cell.innerHTML = `${startDate.toLocaleString(
-                            "da-DK",
-                            {
-                                weekday: "short",
-                                day: "numeric",
-                                month: "short",
-                            }
-                        )}`;
-                    } else {
-                        datetime_cell.innerHTML = `${startDate.toLocaleString(
-                            "da-DK",
-                            {
-                                weekday: "short",
-                                day: "numeric",
-                                month: "short",
-                            }
-                        )} - ${endDate.toLocaleString("da-DK", {
-                            weekday: "short",
-                            day: "numeric",
-                            month: "short",
-                        })}`;
-                    }
-                } else {
-                    datetime_cell.innerHTML = `${new Date(
-                        event.start.dateTime
-                    ).toLocaleString("da-DK", {
-                        weekday: "short",
-                        day: "numeric",
-                        month: "short",
-                        hour: "numeric",
-                        minute: "numeric",
-                    })}`;
-                }
-                matches = event.summary.match(
-                    /^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u
-                );
-                if (matches) {
-                    eventname_cell.innerHTML = matches[1];
-                    autocompleteAdd("event_name", matches[1]);
-                }
-
-                if (event.location) {
-                    location_cell.innerHTML = event.location;
-                    autocompleteAdd("location", event.location);
-                }
+                });
             }
-        }
-
-        // Add each participant to the autocomplete list
-        namesMap.forEach(function (value, key) {
-            autocompleteAdd("participants", key);
-
-            // Create a checkbox element for each name
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.id = `participant_show_${key}`;
-            checkbox.checked = true;
-            checkbox.addEventListener("change", filterNames);
-
-            document
-                .getElementById("filter_names_container")
-                .appendChild(checkbox);
-
-            const label = document.createElement("label");
-            label.htmlFor = checkbox.id;
-            label.textContent = key;
-            document
-                .getElementById("filter_names_container")
-                .appendChild(label);
         });
-    } else {
-        console.log("No upcoming events found.");
-    }
 }
 
 /**
@@ -814,7 +939,7 @@ async function addCalendarEvent(event, calendarId, reloadEvents = false) {
             console.error(
                 `HTTP ${response.error.code} contacting the Calendar service:\n${response.error.message}`
             );
-            throw error;
+            throw response.error;
         } else {
             console.log(`Event created:  ${response.htmlLink}`);
             if (reloadEvents) {
