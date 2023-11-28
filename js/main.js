@@ -1,11 +1,14 @@
 let app = null;
 
-// let listInput = null;
+const minutes_ms = 60 * 1000;
+const hours_ms = 60 * minutes_ms;
+const days_ms = 24 * hours_ms;
 
-// Discovery doc URL for APIs used by the quickstart
+// Initialize the Google API client for Discovery document
+// retrieval.
+const discoveryUrl = "https://sheets.googleapis.com/$discovery/rest?version=v4";
 const DISCOVERY_DOCS = [
     "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
-    //"https://www.googleapis.com/discovery/v1/apis/tasks/v1/rest",
 ];
 // Authorization scopes required by the API; multiple scopes can be
 // included, separated by spaces.
@@ -15,8 +18,22 @@ let tokenClient;
 let gapiInited = false;
 let gisInited = false;
 
+/**
+ * Copies the contents of a given element to the clipboard.
+ *
+ * @param {Element} element - The element whose contents will be copied.
+ */
+function copyContents(element) {
+    let range = document.createRange();
+    range.selectNode(element);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand("copy");
+    window.getSelection().removeAllRanges();
+}
+
 class ListInput {
-    constructor(baseName, placeholder, placeholderPlural) {
+    constructor(baseName, placeholder) {
         this.baseName = baseName;
         this.placeholder = placeholder;
         this.containerElement = document.getElementById(this.baseName);
@@ -45,6 +62,7 @@ class ListInput {
         );
         this.adjustInputFields();
     }
+
     adjustInputFields() {
         const inputCount = this.numInput.value;
         const listContainer = document.getElementById(
@@ -58,14 +76,8 @@ class ListInput {
         for (let i = listContainer.children.length; i < inputCount; i++) {
             const input = document.createElement("input");
             input.type = "text";
-            let pluralizedName;
-            if (this.baseName.endsWith("s")) {
-                pluralizedName = this.baseName.slice(0, -1);
-            } else {
-                pluralizedName = this.baseName;
-            }
             input.placeholder = `${this.placeholder} ${i + 1}`;
-            input.id = `${pluralizedName}_${i + 1}`;
+            input.id = `${this.baseName}_${i + 1}`;
 
             // Set the value to the localStorage item
             const localStorageItem = localStorage.getItem(
@@ -149,7 +161,7 @@ class EventList {
         // Iterate over the sorted list of events
         for (const event of this.events) {
             // Render the event details
-            const eventDate = event.start.dateTime || event.start.date;
+            // const eventDate = event.start.dateTime || event.start.date;
             if (event.start.date) {
                 year = new Date(event.start.date).getFullYear();
             } else {
@@ -161,11 +173,8 @@ class EventList {
                 d.classList.add("year_header");
                 d.innerText = year;
                 this.parentElement.appendChild(d);
-
                 this.table = document.createElement("table");
-
                 this.parentElement.appendChild(this.table);
-
                 previousYear = year;
             }
 
@@ -262,25 +271,15 @@ class EventList {
 
 class EventinatorApp {
     constructor() {
-        // console.debug("EventinatorApp constructor");
-
         this.eventList = new EventList();
-
-        // load https://apis.google.com/js/api.js" asyncronously and call gapiLoaded() when it's loaded
-        const script = document.createElement("script");
-        script.src = "https://apis.google.com/js/api.js";
-        script.async = true;
-        script.defer = true;
-        script.onload = gapiLoaded;
-        document.head.appendChild(script);
-
-        // load https://accounts.google.com/gsi/client" asyncronously and call gisLoaded() when it's loaded
-        const script2 = document.createElement("script");
-        script2.src = "https://accounts.google.com/gsi/client";
-        script2.async = true;
-        script2.defer = true;
-        script2.onload = gisLoaded;
-        document.head.appendChild(script2);
+        EventinatorApp.loadScript(
+            "https://apis.google.com/js/api.js",
+            gapiLoaded
+        );
+        EventinatorApp.loadScript(
+            "https://accounts.google.com/gsi/client",
+            gisLoaded
+        );
 
         // Initialize the list input for participants
         this.listInput = new ListInput("Participants", "Deltager", "Deltagere");
@@ -343,47 +342,46 @@ class EventinatorApp {
                 let tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
                 if (document.getElementById("purchase_reminder").checked) {
-                    let noun = names.length > 1 ? "billetter" : "billet";
+                    const noun = names.length > 1 ? "billetter" : "billet";
 
-                    const reminder = {
-                        summary: `Køb ${noun} til ${
-                            document.getElementById("event_name").value
-                        }`,
-                        description: `${
-                            names.length
-                        } ${noun}; Til ${nameString}${
-                            document.getElementById("ticket_url").value
-                                ? "\n\n" +
-                                  document.getElementById("ticket_url").value
-                                : ""
-                        }${
-                            document.getElementById("ticket_notes").value
-                                ? "\n\n" +
-                                  document.getElementById("ticket_notes").value
-                                : ""
-                        }`,
-                        start: {
-                            dateTime: new Date(
+                    const reminder = {};
+                    reminder["summary"] = `Køb ${noun} til ${
+                        document.getElementById("event_name").value
+                    }`;
+                    reminder["description"] = `${
+                        names.length
+                    } ${noun}; Til ${nameString}${
+                        document.getElementById("ticket_url").value
+                            ? "\n\n" +
+                              document.getElementById("ticket_url").value
+                            : ""
+                    }${
+                        document.getElementById("ticket_notes").value
+                            ? "\n\n" +
+                              document.getElementById("ticket_notes").value
+                            : ""
+                    }`;
+                    reminder["start"] = {
+                        dateTime: new Date(
+                            document.getElementById("ticket_dt").value
+                        ).toISOString(),
+                        timeZone: tz,
+                    };
+                    reminder["end"] = {
+                        dateTime: new Date(
+                            Date.parse(
                                 document.getElementById("ticket_dt").value
-                            ).toISOString(),
-                            timeZone: tz,
-                        },
-                        end: {
-                            dateTime: new Date(
-                                Date.parse(
-                                    document.getElementById("ticket_dt").value
-                                ) +
-                                    15 * 60 * 1000
-                            ).toISOString(),
-                            timeZone: tz,
-                        },
-                        reminders: {
-                            useDefault: false,
-                            overrides: [
-                                { method: "email", minutes: 30 },
-                                { method: "popup", minutes: 10 },
-                            ],
-                        },
+                            ) +
+                                15 * minutes_ms
+                        ).toISOString(),
+                        timeZone: tz,
+                    };
+                    reminder["reminders"] = {
+                        useDefault: false,
+                        overrides: [
+                            { method: "email", minutes: 30 },
+                            { method: "popup", minutes: 10 },
+                        ],
                     };
 
                     console.log("Adding reminder");
@@ -397,6 +395,7 @@ class EventinatorApp {
                     try {
                         addCalendarEvent(
                             reminder,
+                            "reminder",
                             document.getElementById("ticket_calendar_select")
                                 .value
                         );
@@ -429,10 +428,7 @@ class EventinatorApp {
                             ) +
                                 document.getElementById("event_duration_days")
                                     .value *
-                                    24 *
-                                    60 *
-                                    60 *
-                                    1000
+                                    days_ms
                         )
                             .toISOString()
                             .slice(0, 10);
@@ -446,9 +442,7 @@ class EventinatorApp {
                             ) +
                                 document.getElementById("event_duration_hours")
                                     .value *
-                                    60 *
-                                    60 *
-                                    1000
+                                    hours_ms
                         ).toISOString();
                     }
                     const event = {
@@ -461,14 +455,13 @@ class EventinatorApp {
                         end: end,
                     };
 
-                    console.log("Adding event");
-                    console.log(event);
                     localStorage.setItem(
                         "latest_used_event_calendar",
                         document.getElementById("event_calendar_select").value
                     );
                     addCalendarEvent(
                         event,
+                        "event",
                         document.getElementById("event_calendar_select").value,
                         true
                     );
@@ -506,11 +499,19 @@ class EventinatorApp {
         document.getElementById("automatic_authorize").checked =
             localStorage.getItem("automatic_authorize");
     }
+
+    static loadScript(src, onload) {
+        const script = document.createElement("script");
+        script.src = src;
+        script.async = true;
+        script.defer = true;
+        script.onload = onload;
+        document.head.appendChild(script);
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    // console.debug("DOMContentLoaded");
-    // Initialize the glorious Eventinator app
+    // Initialize the glorious Eventinator app when the DOM is loaded
     app = new EventinatorApp();
 });
 
@@ -651,31 +652,24 @@ function enableElementsInContainer(id, enable = true) {
     }
 }
 
-/**
- * Callback after api.js is loaded.
- */
 function gapiLoaded() {
-    // console.debug("gapiLoaded");
-    gapi.load("client", initializeGapiClient);
-}
-
-/**
- * Callback after the API client is loaded. Loads the
- * discovery doc to initialize the API.
- */
-async function initializeGapiClient() {
-    // console.debug("initializeGapiClient");
-    await gapi.client.init({
-        //apiKey: API_KEY,
-        discoveryDocs: DISCOVERY_DOCS,
+    gapi.load("client", async () => {
+        await gapi.client.init({
+            discoveryDocs: DISCOVERY_DOCS,
+        });
+        gapiInited = true;
+        googeApisLoaded();
     });
-    gapiInited = true;
-    googeApisLoaded();
 }
 
-/**
- * Callback after Google Identity Services are loaded.
- */
+// async function initializeGapiClient() {
+//     await gapi.client.init({
+//         discoveryDocs: DISCOVERY_DOCS,
+//     });
+//     gapiInited = true;
+//     googeApisLoaded();
+// }
+
 function gisLoaded() {
     // console.debug("gisLoaded");
     tokenClient = google.accounts.oauth2.initTokenClient({
@@ -717,7 +711,7 @@ async function authenticate() {
         );
         document.getElementById("authorize").style.display = "none";
         document.getElementById("main").style.visibility = "visible";
-        await listCalendars();
+        await loadAndRenderCalendars();
     };
 
     if (localStorage.getItem("access_token") !== null) {
@@ -730,7 +724,7 @@ async function authenticate() {
             document.getElementById("authorize").style.display = "none";
             document.getElementById("main").style.visibility = "visible";
             try {
-                await listCalendars();
+                await loadAndRenderCalendars();
             } catch (error) {
                 // Any errors encountered here are most likely due to an invalid access token,
                 // so we delete it and try again
@@ -757,9 +751,7 @@ async function authenticate() {
  * Retrieves a list of calendars and populates the ticket and event select elements.
  * @returns {Promise<void>} A promise that resolves when the calendars are listed.
  */
-async function listCalendars() {
-    // console.debug("listCalendars");
-
+async function loadAndRenderCalendars() {
     app.eventList.clearList();
 
     const ticketElement = document.getElementById("ticket_calendar_select");
@@ -776,10 +768,7 @@ async function listCalendars() {
     await gapi.client.calendar.calendarList
         .list()
         .then(async (response) => {
-            // console.debug("calendarList start");
-
             const promises = response.result.items.map(async (calendar) => {
-                // console.debug("1");
                 if (calendar.accessRole !== "reader") {
                     const optionElement = document.createElement("option");
                     optionElement.value = calendar.id;
@@ -788,10 +777,10 @@ async function listCalendars() {
                     ticketElement.add(optionElement.cloneNode(true));
                 }
 
-                return listCalendarEvents(calendar.id);
+                return fetchCalendarEvents(calendar.id);
             });
-
-            return Promise.all(promises); // Wait for all promises to resolve
+            // Wait for all promises to resolve
+            return Promise.all(promises);
         })
         .then(() => {
             app.eventList.render();
@@ -840,7 +829,7 @@ function filterNames() {
  * @param {string} calendarId - The ID of the calendar to retrieve events from.
  * @returns {Promise<void>} - A promise that resolves when the events are listed.
  */
-async function listCalendarEvents(calendarId) {
+async function fetchCalendarEvents(calendarId) {
     await gapi.client.calendar.events
         .list({
             calendarId: calendarId,
@@ -929,7 +918,7 @@ async function listCalendarEvents(calendarId) {
  * @param {boolean} [reloadEvents=false] - Indicates whether to reload the events table after adding the event.
  * @returns {Promise<void>} - A promise that resolves when the event is added successfully.
  */
-async function addCalendarEvent(event, calendarId, reloadEvents = false) {
+async function addCalendarEvent(event, type, calendarId, reloadEvents = false) {
     const request = gapi.client.calendar.events.insert({
         calendarId: calendarId,
         resource: event,
@@ -942,6 +931,25 @@ async function addCalendarEvent(event, calendarId, reloadEvents = false) {
             throw response.error;
         } else {
             console.log(`Event created:  ${response.htmlLink}`);
+
+            let a = document.createElement("a");
+            a.href = response.htmlLink;
+            a.target = "_blank";
+            a.innerHTML = response.summary;
+            console.log(a.outerHTML);
+
+            let title =
+                type === "reminder"
+                    ? "Påmindelse tilføjet"
+                    : "Begivenhed tilføjet";
+
+            VanillaToasts.create({
+                title: title,
+                text: a.outerHTML,
+                type: "success",
+                timeout: 30000,
+            });
+
             if (reloadEvents) {
                 // Clear all elements inside the event_table_container
                 const container = document.getElementById(
@@ -952,7 +960,7 @@ async function addCalendarEvent(event, calendarId, reloadEvents = false) {
                 }
 
                 // Reload the table for all calendars
-                listCalendars();
+                loadAndRenderCalendars();
             }
         }
     });
@@ -1110,14 +1118,4 @@ function autocomplete(
     document.addEventListener("click", function (e) {
         closeAllLists(e.target);
     });
-}
-
-// Copy the table to the clipboard
-function copyContents(element) {
-    let range = document.createRange();
-    range.selectNode(element);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-    document.execCommand("copy");
-    window.getSelection().removeAllRanges();
 }
