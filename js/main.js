@@ -269,6 +269,44 @@ class EventList {
     }
 }
 
+/**
+ * A utility class for displaying toast messages.
+ */
+class Toaster {
+    static success(title, text) {
+        VanillaToasts.create({
+            title: title,
+            text: text,
+            type: "success",
+            timeout: 30000,
+        });
+    }
+
+    static error(error) {
+        VanillaToasts.create({
+            title: "An error occurred!",
+            text: error,
+            type: "error",
+        });
+    }
+
+    static event_link(event) {
+        const a = document.createElement("a");
+        a.href = event.htmlLink;
+        a.target = "_blank";
+        a.innerHTML = event.summary;
+        return a.outerHTML;
+    }
+
+    static reminder_added(event) {
+        this.success("Påmindelse tilføjet", Toaster.event_link(event));
+    }
+
+    static event_added(event) {
+        this.success("Begivenhed tilføjet", Toaster.event_link(event));
+    }
+}
+
 class EventinatorApp {
     constructor() {
         this.eventList = new EventList();
@@ -384,24 +422,23 @@ class EventinatorApp {
                         ],
                     };
 
-                    console.log("Adding reminder");
-                    console.log(reminder);
                     // Save the id of the calendar in a localstorage item
                     // so we can use it later
                     localStorage.setItem(
                         "latest_used_reminder_calendar",
                         document.getElementById("ticket_calendar_select").value
                     );
-                    try {
-                        addCalendarEvent(
-                            reminder,
-                            "reminder",
-                            document.getElementById("ticket_calendar_select")
-                                .value
-                        );
-                    } catch (error) {
-                        console.log(error);
-                    }
+
+                    addCalendarEvent(
+                        reminder,
+                        document.getElementById("ticket_calendar_select").value
+                    )
+                        .then((response) => {
+                            Toaster.reminder_added(response);
+                        })
+                        .catch((error) => {
+                            Toaster.error(error);
+                        });
                 }
 
                 if (document.getElementById("calendar_entry").checked) {
@@ -459,16 +496,31 @@ class EventinatorApp {
                         "latest_used_event_calendar",
                         document.getElementById("event_calendar_select").value
                     );
+
                     addCalendarEvent(
                         event,
-                        "event",
-                        document.getElementById("event_calendar_select").value,
-                        true
-                    );
+                        document.getElementById("event_calendar_select").value
+                    )
+                        .then((response) => {
+                            Toaster.event_added(response);
+
+                            // Clear all elements inside the event_table_container
+                            const container = document.getElementById(
+                                "event_table_container"
+                            );
+                            while (container.firstChild) {
+                                container.removeChild(container.firstChild);
+                            }
+
+                            // Reload the table for all calendars
+                            loadAndRenderCalendars();
+                        })
+                        .catch((error) => {
+                            Toaster.error(error);
+                        });
                 }
             } catch (error) {
-                // Don't know if this works
-                console.log(error);
+                Toaster.error(error);
                 localStorage.removeItem("access_token");
                 gapi.client.setToken(null);
                 document.getElementById("add_btn").click();
@@ -555,7 +607,6 @@ function enable_disable_add_button() {
             event_name_valid && event_date_valid
         );
     } else {
-        console.log("Hide");
         document.getElementById("add_btn").style.display = "none";
     }
 }
@@ -662,16 +713,7 @@ function gapiLoaded() {
     });
 }
 
-// async function initializeGapiClient() {
-//     await gapi.client.init({
-//         discoveryDocs: DISCOVERY_DOCS,
-//     });
-//     gapiInited = true;
-//     googeApisLoaded();
-// }
-
 function gisLoaded() {
-    // console.debug("gisLoaded");
     tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
@@ -728,14 +770,14 @@ async function authenticate() {
             } catch (error) {
                 // Any errors encountered here are most likely due to an invalid access token,
                 // so we delete it and try again
-                console.debug(`${error.code}: ${error.message}`);
+                Toaster.error(error);
                 localStorage.removeItem("access_token");
                 gapi.client.setToken(null);
                 await authenticate();
             }
         } else {
             // Access token is expired
-            console.log("Token expired");
+            Toaster.error(error);
             localStorage.removeItem("access_token");
             gapi.client.setToken(null);
             await authenticate();
@@ -811,7 +853,6 @@ function filterNames() {
         const name = checkbox.id.substring(17);
         const names = document.querySelectorAll(`.name`);
         for (const nameElement of names) {
-            console.log(nameElement.innerText, name);
             if (nameElement.innerText === name) {
                 if (checkbox.checked) {
                     nameElement.style.display = "";
@@ -918,51 +959,19 @@ async function fetchCalendarEvents(calendarId) {
  * @param {boolean} [reloadEvents=false] - Indicates whether to reload the events table after adding the event.
  * @returns {Promise<void>} - A promise that resolves when the event is added successfully.
  */
-async function addCalendarEvent(event, type, calendarId, reloadEvents = false) {
+async function addCalendarEvent(event, calendarId) {
     const request = gapi.client.calendar.events.insert({
         calendarId: calendarId,
         resource: event,
     });
-    request.execute((response) => {
-        if (response.error) {
-            console.error(
-                `HTTP ${response.error.code} contacting the Calendar service:\n${response.error.message}`
-            );
-            throw response.error;
-        } else {
-            console.log(`Event created:  ${response.htmlLink}`);
-
-            let a = document.createElement("a");
-            a.href = response.htmlLink;
-            a.target = "_blank";
-            a.innerHTML = response.summary;
-            console.log(a.outerHTML);
-
-            let title =
-                type === "reminder"
-                    ? "Påmindelse tilføjet"
-                    : "Begivenhed tilføjet";
-
-            VanillaToasts.create({
-                title: title,
-                text: a.outerHTML,
-                type: "success",
-                timeout: 30000,
-            });
-
-            if (reloadEvents) {
-                // Clear all elements inside the event_table_container
-                const container = document.getElementById(
-                    "event_table_container"
-                );
-                while (container.firstChild) {
-                    container.removeChild(container.firstChild);
-                }
-
-                // Reload the table for all calendars
-                loadAndRenderCalendars();
+    return new Promise((resolve, reject) => {
+        request.execute((event_response) => {
+            if (event_response.error) {
+                reject(event_response.error);
             }
-        }
+
+            resolve(event_response);
+        });
     });
 }
 
