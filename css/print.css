@@ -4,7 +4,9 @@ body {
 
 fieldset,
 legend,
-button {
+button,
+#vanillatoasts-container,
+.vanillatoasts-toast {
     display: none;
 }
 
