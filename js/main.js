@@ -277,16 +277,20 @@ class Toaster {
         VanillaToasts.create({
             title: title,
             text: text,
+            icon: "icons/ok.png",
             type: "success",
             timeout: 30000,
+            positionClass: "bottomRight",
         });
     }
 
     static error(error) {
         VanillaToasts.create({
             title: "An error occurred!",
+            icon: "icons/error.png",
             text: error,
             type: "error",
+            positionClass: "bottomRight",
         });
     }
 
@@ -438,6 +442,7 @@ class EventinatorApp {
                         })
                         .catch((error) => {
                             Toaster.error(error);
+                            throw error;
                         });
                 }
 
@@ -517,10 +522,12 @@ class EventinatorApp {
                         })
                         .catch((error) => {
                             Toaster.error(error);
+                            throw error;
                         });
                 }
             } catch (error) {
                 Toaster.error(error);
+                throw error;
                 localStorage.removeItem("access_token");
                 gapi.client.setToken(null);
                 document.getElementById("add_btn").click();
@@ -743,9 +750,10 @@ function googeApisLoaded() {
  * @returns {Promise<void>} A promise that resolves when the authentication process is complete.
  */
 async function authenticate() {
-    tokenClient.callback = async (resp) => {
-        if (resp.error !== undefined) {
-            throw resp;
+    tokenClient.callback = async (response) => {
+        if (response.error !== undefined) {
+            Toaster.error(response.error);
+            throw response.error;
         }
         localStorage.setItem(
             "access_token",
@@ -850,7 +858,9 @@ function filterNames() {
     );
 
     for (const checkbox of checkboxes) {
+        console.log(`checkbox.id: ${checkbox.id}`);
         const name = checkbox.id.substring(17);
+        console.log(`name: ${name}`);
         const names = document.querySelectorAll(`.name`);
         for (const nameElement of names) {
             if (nameElement.innerText === name) {

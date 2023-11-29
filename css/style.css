@@ -1,19 +1,16 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 0.7em;
     color: #ccc;
-    /* background-color: #222; */
-
     background-image: url("../gfx/background-01.jpeg");
-    /* background-repeat: repeat-x; */
     background-position: center;
     background-size: cover;
 }
 
 input[type="datetime-local"] {
-    font-family: Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 span.options {
