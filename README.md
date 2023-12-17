@@ -2,6 +2,8 @@
 
 [Background stock photo attribution](https://www.pexels.com/photo/singer-singing-on-stage-beside-guitar-player-and-bass-player-167636/)
 
+[Vanilla Toasts](https://github.com/AlexKvazos/VanillaToasts/)
+
 ## FAQ
 
 #### Why not use Google Tasks for the "Purchase tickets" reminder?
