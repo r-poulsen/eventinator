@@ -12,7 +12,7 @@ const DISCOVERY_DOCS = [
 ];
 // Authorization scopes required by the API; multiple scopes can be
 // included, separated by spaces.
-const SCOPES = "https://www.googleapis.com/auth/calendar.events.owned";
+const SCOPES = "https://www.googleapis.com/auth/calendar.events";
 
 let tokenClient;
 let gapiInited = false;
