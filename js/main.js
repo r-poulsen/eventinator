@@ -947,24 +947,44 @@ async function fetchCalendarEvents(calendarId) {
                     ) {
                         app.eventList.addEvent(event);
 
-                        let matches = event.description.match(
-                            /(?:Participants|Deltagere): (.+)/u
-                        );
-                        if (matches) {
-                            let namesArray = matches[1].split(/,|og|and/);
-                            let cleanedNames = namesArray
-                                .map(function (name) {
-                                    return name.trim();
-                                })
-                                .filter(function (name) {
-                                    return name !== "";
-                                });
+                        // let matches = event.description.match(
+                        //     /(?:Participants|Deltagere): (.+)/u
+                        // );
+                        // if (matches) {
+                        //     let namesArray = matches[1].split(/,|og|and/);
+                        //     let cleanedNames = namesArray
+                        //         .map(function (name) {
+                        //             return name.trim();
+                        //         })
+                        //         .filter(function (name) {
+                        //             return name !== "";
+                        //         });
 
-                            cleanedNames.forEach(function (name) {
+                        //     cleanedNames.forEach(function (name) {
+                        //         cleanedNames.forEach(function (name) {
+                        //             namesMap.set(name, true);
+                        //         });
+                        //     });
+                        // }
+
+                        if (event.description) {
+                            let matches = event.description.match(
+                                /(?:Participants|Deltagere): (.+)/u
+                            );
+                            if (matches) {
+                                let namesArray = matches[1].split(/,|og|and/);
+                                let cleanedNames = namesArray
+                                    .map(function (name) {
+                                        return name.trim();
+                                    })
+                                    .filter(function (name) {
+                                        return name !== "";
+                                    });
+
                                 cleanedNames.forEach(function (name) {
                                     namesMap.set(name, true);
                                 });
-                            });
+                            }
                         }
 
                         matches = event.summary.match(
