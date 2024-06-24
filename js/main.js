@@ -190,24 +190,26 @@ class EventList {
             const eventname_cell = row.insertCell(2);
             const location_cell = row.insertCell(3);
 
-            let matches = event.description.match(
-                /(?:Participants|Deltagere): (.+)/u
-            );
-            if (matches) {
-                matches[1]
-                    .split(/,|og|and/)
-                    .map(function (name) {
-                        return name.trim();
-                    })
-                    .filter(function (name) {
-                        return name !== "";
-                    })
-                    .forEach(function (name) {
-                        const d = document.createElement("div");
-                        d.classList.add("name");
-                        d.innerText = name;
-                        participants_cell.appendChild(d);
-                    });
+            if (event.description) {
+                let matches = event.description.match(
+                    /(?:Participants|Deltagere): (.+)/u
+                );
+                if (matches) {
+                    matches[1]
+                        .split(/,|og|and/)
+                        .map(function (name) {
+                            return name.trim();
+                        })
+                        .filter(function (name) {
+                            return name !== "";
+                        })
+                        .forEach(function (name) {
+                            const d = document.createElement("div");
+                            d.classList.add("name");
+                            d.innerText = name;
+                            participants_cell.appendChild(d);
+                        });
+                }
             }
 
             if (event.start.date) {
@@ -987,7 +989,7 @@ async function fetchCalendarEvents(calendarId) {
                             }
                         }
 
-                        matches = event.summary.match(
+                        let matches = event.summary.match(
                             /^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u
                         );
                         if (matches) {
