@@ -256,7 +256,9 @@ class EventList {
                 })}`;
             }
 
-            matches = event.summary.match(/^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u);
+            let matches = event.summary.match(
+                /^[🎶🎥😀🏈🎭🎉🎫] [A-Å]\w+: (.+)/u
+            );
             if (matches) {
                 eventname_cell.innerHTML = matches[1];
             }
