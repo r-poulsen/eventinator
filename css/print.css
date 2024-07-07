@@ -9,6 +9,7 @@ body {
 fieldset,
 legend,
 button,
+.no_print,
 #vanillatoasts-container,
 .vanillatoasts-toast {
     display: none;

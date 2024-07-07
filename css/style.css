@@ -42,6 +42,10 @@ button.large_button {
     width: 500px;
 }
 
+#hide_btn {
+    width: 1em;
+}
+
 table {
     width: 100%;
     background-color: white;

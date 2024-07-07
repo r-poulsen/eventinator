@@ -181,14 +181,37 @@ class EventList {
             }
 
             const row = this.table.insertRow(-1);
-            row.addEventListener("click", () => {
-                window.open(event.htmlLink);
-            });
 
-            const participants_cell = row.insertCell(0);
-            const datetime_cell = row.insertCell(1);
-            const eventname_cell = row.insertCell(2);
-            const location_cell = row.insertCell(3);
+            let c = 0;
+
+            const hide_btn_cell = row.insertCell(c++);
+            // Add a "hide" icon to each row
+            const hide_btn = document.createElement("img");
+            hide_btn.src = "icons/hide.svg";
+            hide_btn.alt = "Hide";
+            hide_btn.title = "Hide";
+            hide_btn.id = "hide_btn";
+            hide_btn_cell.classList.add("no_print");
+            hide_btn.addEventListener("click", () => {
+                row.style.display = "none";
+            });
+            hide_btn_cell.appendChild(hide_btn);
+            const participants_cell = row.insertCell(c++);
+            const datetime_cell = row.insertCell(c++);
+            const eventname_cell = row.insertCell(c++);
+            const location_cell = row.insertCell(c++);
+
+            // Iterate over each of these named cells and add a click event listener
+            [
+                participants_cell,
+                datetime_cell,
+                eventname_cell,
+                location_cell,
+            ].forEach((cell) => {
+                cell.addEventListener("click", () => {
+                    window.open(event.htmlLink);
+                });
+            });
 
             if (event.description) {
                 let matches = event.description.match(
