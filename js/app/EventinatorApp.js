@@ -181,11 +181,13 @@ export class EventinatorApp {
                 
             case 'authenticated':
                 this.appState.setAuthenticated(true, this.authService.getAccessToken());
+                this.updateUIVisibility(true); // Directly update UI visibility
                 await this.loadAndRenderCalendars();
                 break;
                 
             case 'signed_out':
                 this.appState.setAuthenticated(false);
+                this.updateUIVisibility(false); // Directly update UI visibility
                 this.appState.reset();
                 break;
         }
