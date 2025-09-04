@@ -172,29 +172,25 @@ export class EventinatorApp {
      * @param {string} state - Authentication state
      */
     async handleAuthStateChange(state) {
-        console.log('Auth state changed:', state);
+        console.log('Auth state changed:', state, 'Type:', typeof state);
         
-        switch (state) {
-            case 'initialized':
-                console.log('Setting auth initialized');
-                this.appState.setAuthInitialized(true);
-                break;
-                
-            case 'authenticated':
-                console.log('Processing authenticated state');
-                this.appState.setAuthenticated(true, this.authService.getAccessToken());
-                console.log('About to call updateUIVisibility(true)');
-                this.updateUIVisibility(true); // Directly update UI visibility
-                console.log('Called updateUIVisibility, now loading calendars');
-                await this.loadAndRenderCalendars();
-                break;
-                
-            case 'signed_out':
-                console.log('Processing signed out state');
-                this.appState.setAuthenticated(false);
-                this.updateUIVisibility(false); // Directly update UI visibility
-                this.appState.reset();
-                break;
+        if (state === 'initialized') {
+            console.log('Setting auth initialized');
+            this.appState.setAuthInitialized(true);
+        } else if (state === 'authenticated') {
+            console.log('Processing authenticated state');
+            this.appState.setAuthenticated(true, this.authService.getAccessToken());
+            console.log('About to call updateUIVisibility(true)');
+            this.updateUIVisibility(true); // Directly update UI visibility
+            console.log('Called updateUIVisibility, now loading calendars');
+            await this.loadAndRenderCalendars();
+        } else if (state === 'signed_out') {
+            console.log('Processing signed out state');
+            this.appState.setAuthenticated(false);
+            this.updateUIVisibility(false); // Directly update UI visibility
+            this.appState.reset();
+        } else {
+            console.error('Unknown auth state:', state);
         }
     }
 
