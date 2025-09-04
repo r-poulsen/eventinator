@@ -70,15 +70,19 @@ export class EventinatorApp {
      */
     initializeUIComponents() {
         try {
+            console.log('Initializing form manager...');
             // Initialize form manager
             this.formManager.initialize();
             
+            console.log('Initializing list input...');
             // Initialize participant list input
             this.listInput = new ListInput('Participants', 'Deltager', 'Deltagere');
             
+            console.log('Initializing autocomplete...');
             // Initialize autocomplete for participant inputs
             AutocompleteManager.initializeParticipantInputs('Participants_list_container');
             
+            console.log('UI components initialized successfully');
         } catch (error) {
             console.error('Error initializing UI components:', error);
             throw error;
@@ -188,16 +192,20 @@ export class EventinatorApp {
      */
     async loadAndRenderCalendars() {
         try {
+            console.log('Loading calendars and events...');
             this.appState.setCalendarsLoading(true);
             this.appState.setEventsLoading(true);
 
             // Load calendars
+            console.log('Fetching calendars...');
             const calendars = await this.calendarService.getCalendars();
             const writableCalendars = calendars.filter(cal => cal.accessRole !== 'reader');
+            console.log(`Found ${calendars.length} calendars, ${writableCalendars.length} writable`);
             
             this.appState.setCalendars(calendars);
             
             // Update form with calendar options
+            console.log('Populating calendar selects...');
             this.formManager.populateCalendarSelects(writableCalendars);
             this.formManager.setSelectedCalendars(
                 this.appState.getState('calendars.selectedEventCalendar'),
@@ -205,10 +213,14 @@ export class EventinatorApp {
             );
 
             // Load events from all calendars
+            console.log('Fetching events...');
             const events = await this.calendarService.getEventinatorEvents();
+            console.log(`Found ${events.length} events`);
             this.appState.setEvents(events);
 
+            console.log('Calendar and event loading completed');
         } catch (error) {
+            console.error('Error loading calendars/events:', error);
             ErrorHandler.handle(error, 'calendar_load', Toaster);
         }
     }
@@ -338,11 +350,15 @@ export class EventinatorApp {
         const addButton = document.getElementById('add_btn');
         if (addButton) {
             addButton.disabled = isSubmitting;
-            addButton.textContent = isSubmitting ? 'Creating...' : addButton.textContent;
+            if (isSubmitting) {
+                addButton.textContent = 'Creating...';
+            } else {
+                // Let the form manager handle the button text
+                this.formManager.updateAddButton();
+            }
         }
 
-        // Disable form inputs during submission
-        this.formManager.setVisible(!isSubmitting);
+        // Don't change main form visibility - just button state is sufficient
     }
 
     /**

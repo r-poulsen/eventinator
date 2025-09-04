@@ -32,7 +32,7 @@ export class GoogleAuth {
      */
     loadGoogleAPIs() {
         return new Promise((resolve, reject) => {
-            if (window.gapi && this.gapiInited) {
+            if (typeof gapi !== 'undefined' && this.gapiInited) {
                 resolve();
                 return;
             }
@@ -43,9 +43,9 @@ export class GoogleAuth {
             script.defer = true;
             
             script.onload = () => {
-                window.gapi.load('client', async () => {
+                gapi.load('client', async () => {
                     try {
-                        await window.gapi.client.init({
+                        await gapi.client.init({
                             discoveryDocs: GOOGLE_API_CONFIG.DISCOVERY_DOCS,
                         });
                         this.gapiInited = true;
@@ -71,7 +71,7 @@ export class GoogleAuth {
      */
     loadGoogleIdentityServices() {
         return new Promise((resolve, reject) => {
-            if (window.google && this.gisInited) {
+            if (typeof google !== 'undefined' && this.gisInited) {
                 resolve();
                 return;
             }
@@ -83,7 +83,7 @@ export class GoogleAuth {
             
             script.onload = () => {
                 try {
-                    this.tokenClient = window.google.accounts.oauth2.initTokenClient({
+                    this.tokenClient = google.accounts.oauth2.initTokenClient({
                         client_id: this.clientId,
                         scope: GOOGLE_API_CONFIG.SCOPES,
                         callback: this.handleAuthCallback.bind(this),
@@ -139,7 +139,7 @@ export class GoogleAuth {
             }
 
             // Store the access token
-            const token = window.gapi.client.getToken();
+            const token = gapi.client.getToken();
             if (token && token.access_token) {
                 LocalStorageService.setAccessToken(token.access_token);
                 this.isAuthenticated = true;
@@ -164,9 +164,9 @@ export class GoogleAuth {
             // Check for existing valid token
             const existingToken = LocalStorageService.getAccessToken();
             if (existingToken && !forceConsent) {
-                window.gapi.client.setToken({ access_token: existingToken });
+                gapi.client.setToken({ access_token: existingToken });
                 
-                const token = window.gapi.client.getToken();
+                const token = gapi.client.getToken();
                 if (token && !token.expired) {
                     this.isAuthenticated = true;
                     if (this.onAuthStateChange) {
@@ -198,8 +198,8 @@ export class GoogleAuth {
         try {
             LocalStorageService.removeAccessToken();
             
-            if (window.gapi && window.gapi.client) {
-                window.gapi.client.setToken(null);
+            if (typeof gapi !== 'undefined' && gapi.client) {
+                gapi.client.setToken(null);
             }
 
             this.isAuthenticated = false;
@@ -217,11 +217,11 @@ export class GoogleAuth {
      * @returns {boolean}
      */
     isUserAuthenticated() {
-        if (!window.gapi || !window.gapi.client) {
+        if (typeof gapi === 'undefined' || !gapi.client) {
             return false;
         }
 
-        const token = window.gapi.client.getToken();
+        const token = gapi.client.getToken();
         return token && !token.expired && this.isAuthenticated;
     }
 
@@ -234,7 +234,7 @@ export class GoogleAuth {
             return null;
         }
 
-        const token = window.gapi.client.getToken();
+        const token = gapi.client.getToken();
         return token ? token.access_token : null;
     }
 

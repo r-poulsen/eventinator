@@ -27,6 +27,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.eventinatorApp = app;
         
         console.log('Eventinator initialized successfully');
+        
+        // Add visual confirmation
+        const initDiv = document.createElement('div');
+        initDiv.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        `;
+        initDiv.textContent = 'Eventinator Loaded ✓';
+        document.body.appendChild(initDiv);
+        
+        // Remove after 3 seconds
+        setTimeout(() => initDiv.remove(), 3000);
 
     } catch (error) {
         console.error('Failed to initialize Eventinator:', error);
@@ -80,7 +100,7 @@ window.copyContents = function(element) {
 
 // Filter names function (used in HTML/dynamically created elements)
 window.filterNames = function() {
-    if (app && app.eventList) {
+    if (app && app.filterByParticipants) {
         app.filterByParticipants();
     }
 };

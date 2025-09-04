@@ -25,7 +25,11 @@ export class Toaster {
             type: "success"
         };
 
-        VanillaToasts.create(config);
+        if (typeof VanillaToasts !== 'undefined') {
+            VanillaToasts.create(config);
+        } else {
+            console.error('VanillaToasts not available:', config.title, config.text);
+        }
     }
 
     /**
@@ -72,7 +76,11 @@ export class Toaster {
             type: "error"
         };
 
-        VanillaToasts.create(config);
+        if (typeof VanillaToasts !== 'undefined') {
+            VanillaToasts.create(config);
+        } else {
+            console.error('VanillaToasts not available:', config.title, config.text);
+        }
     }
 
     /**
@@ -91,7 +99,11 @@ export class Toaster {
             type: "warning"
         };
 
-        VanillaToasts.create(config);
+        if (typeof VanillaToasts !== 'undefined') {
+            VanillaToasts.create(config);
+        } else {
+            console.error('VanillaToasts not available:', config.title, config.text);
+        }
     }
 
     /**
@@ -110,7 +122,11 @@ export class Toaster {
             type: "info"
         };
 
-        VanillaToasts.create(config);
+        if (typeof VanillaToasts !== 'undefined') {
+            VanillaToasts.create(config);
+        } else {
+            console.error('VanillaToasts not available:', config.title, config.text);
+        }
     }
 
     /**

@@ -15,7 +15,7 @@ export class CalendarService {
      */
     async getCalendars() {
         return this.authService.executeAuthenticatedCall(async () => {
-            const response = await window.gapi.client.calendar.calendarList.list();
+            const response = await gapi.client.calendar.calendarList.list();
             return response.result.items || [];
         });
     }
@@ -46,7 +46,7 @@ export class CalendarService {
         const queryOptions = { ...defaultOptions, ...options, calendarId };
 
         return this.authService.executeAuthenticatedCall(async () => {
-            const response = await window.gapi.client.calendar.events.list(queryOptions);
+            const response = await gapi.client.calendar.events.list(queryOptions);
             return response.result.items || [];
         });
     }
@@ -91,7 +91,7 @@ export class CalendarService {
     async createEvent(eventData, calendarId) {
         return this.authService.executeAuthenticatedCall(async () => {
             return new Promise((resolve, reject) => {
-                const request = window.gapi.client.calendar.events.insert({
+                const request = gapi.client.calendar.events.insert({
                     calendarId: calendarId,
                     resource: eventData,
                 });
@@ -117,7 +117,7 @@ export class CalendarService {
     async updateEvent(eventId, eventData, calendarId) {
         return this.authService.executeAuthenticatedCall(async () => {
             return new Promise((resolve, reject) => {
-                const request = window.gapi.client.calendar.events.update({
+                const request = gapi.client.calendar.events.update({
                     calendarId: calendarId,
                     eventId: eventId,
                     resource: eventData,
@@ -143,7 +143,7 @@ export class CalendarService {
     async deleteEvent(eventId, calendarId) {
         return this.authService.executeAuthenticatedCall(async () => {
             return new Promise((resolve, reject) => {
-                const request = window.gapi.client.calendar.events.delete({
+                const request = gapi.client.calendar.events.delete({
                     calendarId: calendarId,
                     eventId: eventId,
                 });
