@@ -21,7 +21,7 @@
         <link rel="manifest" href="site.webmanifest" />
         <title>Eventinator</title>
         <script src="js/clientid.js"></script>
-        <script src="js/main.js"></script>
+        <script type="module" src="js/main.js"></script>
         <script src="js/vanillatoasts.js"></script>
         <link rel="stylesheet" href="css/style.css" media="screen" />
         <link rel="stylesheet" href="css/vanillatoasts.css" media="screen" />
@@ -31,14 +31,13 @@
     <body>
         <div id="authorize">
             <p>Du skal give tilladelse før du kan bruge applikationen.</p>
-            <button id="authorize_button" onclick="authenticate()">
+            <button id="authorize">
                 Giv tilladelse
             </button>
             <br />
             <input
                 type="checkbox"
                 id="automatic_authorize"
-                onchange="localStorage.setItem('automatic_authorize', this.checked)"
             />
             <label for="automatic_authorize">Giv automatisk tilladelse</label>
         </div>
@@ -141,7 +140,6 @@
                     <input
                         type="checkbox"
                         id="all_day"
-                        onchange="toggleDurationInputs()"
                     />
                     <label for="all_day"> Heldags-begivenhed </label>
                 </div>
