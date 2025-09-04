@@ -176,16 +176,21 @@ export class EventinatorApp {
         
         switch (state) {
             case 'initialized':
+                console.log('Setting auth initialized');
                 this.appState.setAuthInitialized(true);
                 break;
                 
             case 'authenticated':
+                console.log('Processing authenticated state');
                 this.appState.setAuthenticated(true, this.authService.getAccessToken());
+                console.log('About to call updateUIVisibility(true)');
                 this.updateUIVisibility(true); // Directly update UI visibility
+                console.log('Called updateUIVisibility, now loading calendars');
                 await this.loadAndRenderCalendars();
                 break;
                 
             case 'signed_out':
+                console.log('Processing signed out state');
                 this.appState.setAuthenticated(false);
                 this.updateUIVisibility(false); // Directly update UI visibility
                 this.appState.reset();
@@ -340,13 +345,23 @@ export class EventinatorApp {
         const mainContainer = document.getElementById('main');
 
         console.log('Updating UI visibility, authenticated:', isAuthenticated);
+        console.log('Authorize container found:', !!authorizeContainer);
+        console.log('Main container found:', !!mainContainer);
 
         if (authorizeContainer) {
+            console.log('Hiding authorize container');
             authorizeContainer.style.display = isAuthenticated ? 'none' : '';
+            console.log('Authorize container display:', authorizeContainer.style.display);
+        } else {
+            console.error('Authorize container not found!');
         }
 
         if (mainContainer) {
+            console.log('Showing main container');
             mainContainer.style.visibility = isAuthenticated ? 'visible' : 'hidden';
+            console.log('Main container visibility:', mainContainer.style.visibility);
+        } else {
+            console.error('Main container not found!');
         }
         
         console.log('UI visibility updated');
