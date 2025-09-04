@@ -118,12 +118,22 @@ export class GoogleAuth {
      * Called when initialization is complete
      */
     onInitializationComplete() {
+        console.log('Google APIs initialized');
+        
         if (this.onAuthStateChange) {
             this.onAuthStateChange('initialized');
         }
 
-        // Check for existing token and auto-authenticate if enabled
-        if (LocalStorageService.getAutomaticAuthorize()) {
+        // Check for existing token first
+        const existingToken = LocalStorageService.getAccessToken();
+        console.log('Existing token found:', !!existingToken);
+        
+        if (existingToken) {
+            // Try to use existing token
+            this.authenticate();
+        } else if (LocalStorageService.getAutomaticAuthorize()) {
+            // Auto-authenticate if enabled
+            console.log('Auto-authenticate enabled');
             this.authenticate();
         }
     }
@@ -134,21 +144,31 @@ export class GoogleAuth {
      */
     async handleAuthCallback(response) {
         try {
+            console.log('Auth callback received:', response);
+            
             if (response.error) {
+                console.error('Auth callback error:', response.error);
                 throw new Error(response.error);
             }
 
             // Store the access token
             const token = gapi.client.getToken();
+            console.log('Token from gapi:', token);
+            
             if (token && token.access_token) {
+                console.log('Storing access token and setting authenticated state');
                 LocalStorageService.setAccessToken(token.access_token);
                 this.isAuthenticated = true;
                 
                 if (this.onAuthStateChange) {
+                    console.log('Calling auth state change: authenticated');
                     this.onAuthStateChange('authenticated');
                 }
+            } else {
+                console.error('No valid token received');
             }
         } catch (error) {
+            console.error('Error in auth callback:', error);
             ErrorHandler.handleAuthError(error);
             throw error;
         }
@@ -161,27 +181,39 @@ export class GoogleAuth {
      */
     async authenticate(forceConsent = false) {
         try {
+            console.log('Attempting authentication, forceConsent:', forceConsent);
+            
             // Check for existing valid token
             const existingToken = LocalStorageService.getAccessToken();
+            console.log('Checking existing token:', !!existingToken);
+            
             if (existingToken && !forceConsent) {
                 gapi.client.setToken({ access_token: existingToken });
                 
                 const token = gapi.client.getToken();
+                console.log('Token set, checking validity:', token ? !token.expired : false);
+                
                 if (token && !token.expired) {
+                    console.log('Token is valid, setting authenticated state');
                     this.isAuthenticated = true;
                     if (this.onAuthStateChange) {
                         this.onAuthStateChange('authenticated');
                     }
                     return;
+                } else {
+                    console.log('Token expired or invalid, removing');
+                    LocalStorageService.removeAccessToken();
                 }
             }
 
             // Request new token
+            console.log('Requesting new token');
             if (!this.tokenClient) {
                 throw new Error('Token client not initialized');
             }
 
             const prompt = forceConsent ? 'consent' : '';
+            console.log('Requesting access token with prompt:', prompt);
             this.tokenClient.requestAccessToken({ prompt });
 
         } catch (error) {

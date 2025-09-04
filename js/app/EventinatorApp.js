@@ -56,6 +56,10 @@ export class EventinatorApp {
             // Initialize autocomplete
             this.initializeAutocomplete();
             
+            // Set initial UI state
+            console.log('Setting initial UI state');
+            this.updateUIVisibility(false); // Start with not authenticated
+            
             this.isInitialized = true;
             console.log('Eventinator app initialized successfully');
             
@@ -100,7 +104,7 @@ export class EventinatorApp {
         }
 
         // Authorize button click
-        const authorizeButton = document.getElementById('authorize');
+        const authorizeButton = document.getElementById('authorize_button');
         if (authorizeButton) {
             authorizeButton.addEventListener('click', () => {
                 this.authService.authenticate(true);
@@ -330,16 +334,20 @@ export class EventinatorApp {
      * @param {boolean} isAuthenticated - Whether user is authenticated
      */
     updateUIVisibility(isAuthenticated) {
-        const authorizeButton = document.getElementById('authorize');
+        const authorizeContainer = document.getElementById('authorize');
         const mainContainer = document.getElementById('main');
 
-        if (authorizeButton) {
-            authorizeButton.style.display = isAuthenticated ? 'none' : '';
+        console.log('Updating UI visibility, authenticated:', isAuthenticated);
+
+        if (authorizeContainer) {
+            authorizeContainer.style.display = isAuthenticated ? 'none' : '';
         }
 
         if (mainContainer) {
             mainContainer.style.visibility = isAuthenticated ? 'visible' : 'hidden';
         }
+        
+        console.log('UI visibility updated');
     }
 
     /**
