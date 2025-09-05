@@ -518,10 +518,8 @@ export class EventinatorApp {
                 this.listInput.destroy();
             }
 
-            // Sign out user
-            if (this.authService) {
-                this.authService.signOut();
-            }
+            // Don't sign out user on destroy - preserve authentication state
+            // The user should stay authenticated across page reloads
 
             console.log('Eventinator app destroyed');
             
