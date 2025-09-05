@@ -142,11 +142,23 @@ export class FormManager {
         const isAllDay = this.formElements.allDay.checked;
         
         if (this.formElements.durationHoursContainer) {
-            this.formElements.durationHoursContainer.style.display = isAllDay ? 'none' : '';
+            if (isAllDay) {
+                this.formElements.durationHoursContainer.classList.add('smooth-hide');
+                this.formElements.durationHoursContainer.classList.remove('smooth-show');
+            } else {
+                this.formElements.durationHoursContainer.classList.remove('smooth-hide');
+                this.formElements.durationHoursContainer.classList.add('smooth-show');
+            }
         }
         
         if (this.formElements.durationDaysContainer) {
-            this.formElements.durationDaysContainer.style.display = isAllDay ? '' : 'none';
+            if (isAllDay) {
+                this.formElements.durationDaysContainer.classList.remove('smooth-hide');
+                this.formElements.durationDaysContainer.classList.add('smooth-show');
+            } else {
+                this.formElements.durationDaysContainer.classList.add('smooth-hide');
+                this.formElements.durationDaysContainer.classList.remove('smooth-show');
+            }
         }
     }
 
@@ -169,7 +181,7 @@ export class FormManager {
     }
 
     /**
-     * Enable or disable a container and its elements
+     * Enable or disable a container and its elements with smooth transitions
      * @param {string} containerName - Name of the container
      * @param {boolean} enable - Whether to enable the container
      */
@@ -179,8 +191,14 @@ export class FormManager {
         
         if (!container) return;
 
-        // Show/hide container
-        container.style.display = enable ? '' : 'none';
+        // Use CSS classes for smooth transitions instead of display none
+        if (enable) {
+            container.classList.remove('smooth-hide');
+            container.classList.add('smooth-show');
+        } else {
+            container.classList.remove('smooth-show');
+            container.classList.add('smooth-hide');
+        }
         
         // Enable/disable all form elements within container
         const elements = container.querySelectorAll('input, select, textarea, button');
@@ -216,13 +234,15 @@ export class FormManager {
             isEnabled = isEventNameValid && isEventDateValid;
         }
 
-        // Update button
+        // Update button with smooth transitions
         if (buttonText) {
             this.formElements.addButton.textContent = buttonText;
             this.formElements.addButton.disabled = !isEnabled;
-            this.formElements.addButton.style.display = '';
+            this.formElements.addButton.classList.remove('smooth-hide');
+            this.formElements.addButton.classList.add('smooth-show');
         } else {
-            this.formElements.addButton.style.display = 'none';
+            this.formElements.addButton.classList.add('smooth-hide');
+            this.formElements.addButton.classList.remove('smooth-show');
         }
     }
 

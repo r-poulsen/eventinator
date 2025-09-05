@@ -339,7 +339,13 @@ export class ListInput {
      * @param {boolean} visible - Whether the component should be visible
      */
     setVisible(visible) {
-        this.containerElement.style.display = visible ? '' : 'none';
+        if (visible) {
+            this.containerElement.classList.remove('smooth-hide');
+            this.containerElement.classList.add('smooth-show');
+        } else {
+            this.containerElement.classList.add('smooth-hide');
+            this.containerElement.classList.remove('smooth-show');
+        }
     }
 
     /**

@@ -15,6 +15,27 @@ input[type="datetime-local"] {
 
 span.options {
     white-space: nowrap;
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* Improved checkbox and form interactions */
+input[type="checkbox"] {
+    transition: transform 0.1s ease-in-out;
+}
+
+input[type="checkbox"]:hover {
+    transform: scale(1.1);
+}
+
+/* Smooth transitions for form elements */
+input, select, button {
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+input:focus, select:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+    outline: none;
 }
 
 #event label,
@@ -40,6 +61,17 @@ button.large_button {
     padding: 5px;
     margin: 5px;
     width: 500px;
+    transition: all 0.2s ease-in-out;
+}
+
+button.large_button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+button.large_button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 table {
@@ -109,6 +141,35 @@ fieldset {
     border-radius: 5px;
     padding: 5px;
     margin: 8px;
+    transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out;
+}
+
+/* Smooth hiding for form containers */
+.form-container-hidden {
+    opacity: 0.3;
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 5px;
+    margin: 2px 8px;
+    pointer-events: none;
+}
+
+/* Smooth transitions for inline elements */
+.smooth-hide {
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    max-height: 0;
+    overflow: hidden;
+}
+
+.smooth-show {
+    opacity: 1;
+    transform: scaleY(1);
+    transform-origin: top;
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    max-height: none;
 }
 
 fieldset#options {

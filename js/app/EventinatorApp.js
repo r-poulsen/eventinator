@@ -460,7 +460,13 @@ export class EventinatorApp {
             const nameElements = document.querySelectorAll('.name');
             nameElements.forEach(nameElement => {
                 if (nameElement.textContent === participantName) {
-                    nameElement.style.display = checkbox.checked ? '' : 'none';
+                    if (checkbox.checked) {
+                        nameElement.classList.remove('smooth-hide');
+                        nameElement.classList.add('smooth-show');
+                    } else {
+                        nameElement.classList.add('smooth-hide');
+                        nameElement.classList.remove('smooth-show');
+                    }
                     console.log(`${checkbox.checked ? 'Showing' : 'Hiding'} participant: ${participantName}`);
                 }
             });
