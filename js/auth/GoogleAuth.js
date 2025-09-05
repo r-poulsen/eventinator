@@ -126,36 +126,18 @@ export class GoogleAuth {
 
         // Check for existing token first
         const existingToken = LocalStorageService.getAccessToken();
-        console.log('=== AUTHENTICATION DEBUG ===');
-        console.log('Existing token found:', !!existingToken);
-        console.log('Raw automatic_authorize value:', localStorage.getItem('automatic_authorize'));
-        console.log('LocalStorageService.getAutomaticAuthorize():', LocalStorageService.getAutomaticAuthorize());
-        console.log('Main branch logic (truthy check):', !!localStorage.getItem('automatic_authorize'));
         
         if (existingToken) {
-            // Set the existing token - don't validate here, let API calls handle validation
-            console.log('=== FOUND EXISTING TOKEN ===');
-            console.log('Token length:', existingToken.length);
-            console.log('Auto authorize setting:', LocalStorageService.getAutomaticAuthorize());
+            // Set the existing token and proceed directly (like main branch)
             gapi.client.setToken({ access_token: existingToken });
             this.isAuthenticated = true;
             
             if (this.onAuthStateChange) {
-                console.log('Calling onAuthStateChange with "authenticated"');
                 this.onAuthStateChange('authenticated');
             }
-        } else {
-            console.log('=== NO EXISTING TOKEN ===');
-            console.log('Auto authorize setting (refactor):', LocalStorageService.getAutomaticAuthorize());
-            console.log('Auto authorize setting (main branch logic):', !!localStorage.getItem('automatic_authorize'));
-            
-            // Temporarily use main branch logic for testing
-            if (localStorage.getItem('automatic_authorize')) {
-                console.log('Auto-authenticate enabled (main branch logic), calling authenticate()');
-                this.authenticate();
-            } else {
-                console.log('Auto-authenticate disabled, not calling authenticate()');
-            }
+        } else if (LocalStorageService.getAutomaticAuthorize()) {
+            // Only authenticate if automatic authorize is enabled AND no token exists
+            this.authenticate();
         }
     }
 
@@ -202,13 +184,10 @@ export class GoogleAuth {
      */
     async authenticate(forceConsent = false) {
         try {
-            console.log('=== AUTHENTICATE() CALLED ===');
-            console.log('forceConsent:', forceConsent);
-            console.log('Stack trace:', new Error().stack);
+            console.log('Authenticating user, forceConsent:', forceConsent);
             
             // Check for existing valid token
             const existingToken = LocalStorageService.getAccessToken();
-            console.log('Checking existing token in authenticate():', !!existingToken);
             
             if (existingToken && !forceConsent) {
                 gapi.client.setToken({ access_token: existingToken });
