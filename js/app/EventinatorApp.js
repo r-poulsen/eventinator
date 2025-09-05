@@ -56,9 +56,7 @@ export class EventinatorApp {
             // Initialize autocomplete
             this.initializeAutocomplete();
             
-            // Set initial UI state
-            console.log('Setting initial UI state');
-            this.updateUIVisibility(false); // Start with not authenticated
+            // Don't set initial UI state here - let authentication handle it
             
             this.isInitialized = true;
             console.log('Eventinator app initialized successfully');
