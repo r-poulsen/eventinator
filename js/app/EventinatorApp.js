@@ -446,26 +446,24 @@ export class EventinatorApp {
     }
 
     /**
-     * Filter events by selected participants
+     * Filter participants by showing/hiding individual name divs
      */
     filterByParticipants() {
+        console.log('Filtering participants...');
         const checkboxes = document.querySelectorAll('#filter_names_container input[type="checkbox"]');
-        const selectedParticipants = [];
-
+        
         checkboxes.forEach(checkbox => {
-            if (checkbox.checked) {
-                const participant = checkbox.id.replace('participant_show_', '');
-                selectedParticipants.push(participant);
-            }
-        });
-
-        // Update event list filters
-        this.eventList.setParticipantFilter(selectedParticipants);
-
-        // Update app state
-        this.appState.setActiveFilters({
-            ...this.appState.getState('ui.activeFilters'),
-            participants: selectedParticipants
+            const participantName = checkbox.id.replace('participant_show_', '');
+            console.log(`Checkbox ${checkbox.id}, participant: ${participantName}, checked: ${checkbox.checked}`);
+            
+            // Find all .name divs that match this participant
+            const nameElements = document.querySelectorAll('.name');
+            nameElements.forEach(nameElement => {
+                if (nameElement.textContent === participantName) {
+                    nameElement.style.display = checkbox.checked ? '' : 'none';
+                    console.log(`${checkbox.checked ? 'Showing' : 'Hiding'} participant: ${participantName}`);
+                }
+            });
         });
     }
 
