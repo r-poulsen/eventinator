@@ -129,28 +129,17 @@ export class GoogleAuth {
         console.log('Existing token found:', !!existingToken);
         
         if (existingToken) {
-            // Try to use existing token
+            // Set the existing token - don't validate here, let API calls handle validation
+            console.log('Found existing token, setting it for use');
             gapi.client.setToken({ access_token: existingToken });
-            const token = gapi.client.getToken();
+            this.isAuthenticated = true;
             
-            if (token && !token.expired) {
-                console.log('Existing token is valid, setting authenticated state');
-                this.isAuthenticated = true;
-                if (this.onAuthStateChange) {
-                    this.onAuthStateChange('authenticated');
-                }
-            } else {
-                console.log('Existing token expired, removing and checking auto-auth');
-                LocalStorageService.removeAccessToken();
-                // Check auto-auth after removing expired token
-                if (LocalStorageService.getAutomaticAuthorize()) {
-                    console.log('Auto-authenticate enabled after token expiry');
-                    this.authenticate();
-                }
+            if (this.onAuthStateChange) {
+                this.onAuthStateChange('authenticated');
             }
         } else if (LocalStorageService.getAutomaticAuthorize()) {
-            // Auto-authenticate if enabled
-            console.log('Auto-authenticate enabled');
+            // Auto-authenticate if enabled (only when no existing token)
+            console.log('No existing token, auto-authenticate enabled');
             this.authenticate();
         }
     }
@@ -271,7 +260,8 @@ export class GoogleAuth {
         }
 
         const token = gapi.client.getToken();
-        return token && !token.expired && this.isAuthenticated;
+        // Don't check token.expired here - let API calls handle expiry
+        return token && this.isAuthenticated;
     }
 
     /**
