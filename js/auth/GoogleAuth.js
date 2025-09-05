@@ -126,6 +126,12 @@ export class GoogleAuth {
 
         // Check for existing token first
         const existingToken = LocalStorageService.getAccessToken();
+        console.log('Token check:', {
+            existingToken: !!existingToken,
+            rawToken: localStorage.getItem('access_token'),
+            autoAuth: LocalStorageService.getAutomaticAuthorize(),
+            rawAutoAuth: localStorage.getItem('automatic_authorize')
+        });
         
         if (existingToken) {
             // Set the existing token and proceed directly (like main branch)
