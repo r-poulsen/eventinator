@@ -396,6 +396,7 @@ export class EventinatorApp {
      */
     setupEventFiltering() {
         const participants = this.appState.getState('events.participants');
+        console.log('Setting up event filtering, participants:', participants);
         
         // Create participant filter checkboxes
         this.createParticipantFilter(participants);
@@ -407,10 +408,12 @@ export class EventinatorApp {
      */
     createParticipantFilter(participants) {
         const container = document.getElementById('filter_names_container');
+        console.log('Creating participant filter, container found:', !!container);
         if (!container) return;
 
         // Clear existing checkboxes
         container.innerHTML = '';
+        console.log('Creating checkboxes for participants:', participants);
 
         participants.forEach(participant => {
             const checkboxId = `participant_show_${participant}`;

@@ -238,7 +238,7 @@ export class EventList {
     renderYearSection(year, events) {
         // Create year header
         const yearHeader = document.createElement('div');
-        yearHeader.className = 'year-header';
+        yearHeader.className = 'year_header';
         yearHeader.textContent = year;
         this.parentElement.appendChild(yearHeader);
 
@@ -335,7 +335,7 @@ export class EventList {
         
         participants.forEach(participant => {
             const participantDiv = document.createElement('div');
-            participantDiv.className = 'participant-name';
+            participantDiv.className = 'name';
             participantDiv.textContent = participant;
             participantDiv.dataset.participant = participant;
             cell.appendChild(participantDiv);
