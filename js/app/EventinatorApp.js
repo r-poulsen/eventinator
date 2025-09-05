@@ -225,7 +225,9 @@ export class EventinatorApp {
             const events = await this.calendarService.getEventinatorEvents();
             console.log(`Found ${events.length} events`);
             console.log('Sample events:', events.slice(0, 2));
+            console.log('Setting events in app state...');
             this.appState.setEvents(events);
+            console.log('Events set in app state');
             
             // Also directly render events as fallback
             console.log('Directly rendering events to EventList...');
@@ -233,6 +235,11 @@ export class EventinatorApp {
             this.eventList.addEvents(events);
             this.eventList.render();
             console.log('Direct render completed');
+            
+            // Setup event filtering since state subscription isn't working
+            console.log('Setting up event filtering directly...');
+            this.setupEventFiltering();
+            console.log('Event filtering setup completed');
 
             console.log('Calendar and event loading completed');
         } catch (error) {

@@ -298,6 +298,8 @@ export class AppState {
      * @param {Array} events - List of events
      */
     setEvents(events) {
+        console.log('AppState.setEvents called with', events.length, 'events');
+        
         // Extract unique participants, event names, and locations
         const participants = new Set();
         const eventNames = new Set();
@@ -306,13 +308,22 @@ export class AppState {
         events.forEach(event => {
             // Extract participants
             if (event.description) {
+                console.log('Checking event description:', event.description);
                 const participantMatches = event.description.match(/(?:Participants|Deltagere): (.+)/u);
                 if (participantMatches) {
+                    console.log('Found participants:', participantMatches[1]);
                     participantMatches[1].split(/,|og|and/).forEach(name => {
                         const cleanName = name.trim();
-                        if (cleanName) participants.add(cleanName);
+                        if (cleanName) {
+                            console.log('Adding participant:', cleanName);
+                            participants.add(cleanName);
+                        }
                     });
+                } else {
+                    console.log('No participants found in description');
                 }
+            } else {
+                console.log('Event has no description:', event.summary);
             }
 
             // Extract event names
@@ -327,15 +338,20 @@ export class AppState {
             }
         });
 
+        const participantsArray = Array.from(participants).sort();
+        console.log('Final participants array:', participantsArray);
+        
         this.updateState('events', {
             list: events,
             filteredList: events,
-            participants: Array.from(participants).sort(),
+            participants: participantsArray,
             eventNames: Array.from(eventNames).sort(),
             locations: Array.from(locations).sort(),
             isLoading: false,
             lastUpdated: new Date()
         });
+        
+        console.log('Events state updated with', participantsArray.length, 'participants');
 
         // Update autocomplete data
         this.updateAutocompleteData(eventNames, locations, participants);
