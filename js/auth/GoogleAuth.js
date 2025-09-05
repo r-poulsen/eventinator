@@ -130,7 +130,24 @@ export class GoogleAuth {
         
         if (existingToken) {
             // Try to use existing token
-            this.authenticate();
+            gapi.client.setToken({ access_token: existingToken });
+            const token = gapi.client.getToken();
+            
+            if (token && !token.expired) {
+                console.log('Existing token is valid, setting authenticated state');
+                this.isAuthenticated = true;
+                if (this.onAuthStateChange) {
+                    this.onAuthStateChange('authenticated');
+                }
+            } else {
+                console.log('Existing token expired, removing and checking auto-auth');
+                LocalStorageService.removeAccessToken();
+                // Check auto-auth after removing expired token
+                if (LocalStorageService.getAutomaticAuthorize()) {
+                    console.log('Auto-authenticate enabled after token expiry');
+                    this.authenticate();
+                }
+            }
         } else if (LocalStorageService.getAutomaticAuthorize()) {
             // Auto-authenticate if enabled
             console.log('Auto-authenticate enabled');
