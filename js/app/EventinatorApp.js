@@ -145,9 +145,12 @@ export class EventinatorApp {
 
         // Events state changes
         this.appState.subscribe('events.list', (events) => {
+            console.log('Events state changed, received events:', events.length);
             this.eventList.clearList();
             this.eventList.addEvents(events);
+            console.log('Added events to EventList, now rendering...');
             this.eventList.render();
+            console.log('EventList rendered, setting up filtering...');
             this.setupEventFiltering();
         });
 
@@ -221,7 +224,15 @@ export class EventinatorApp {
             console.log('Fetching events...');
             const events = await this.calendarService.getEventinatorEvents();
             console.log(`Found ${events.length} events`);
+            console.log('Sample events:', events.slice(0, 2));
             this.appState.setEvents(events);
+            
+            // Also directly render events as fallback
+            console.log('Directly rendering events to EventList...');
+            this.eventList.clearList();
+            this.eventList.addEvents(events);
+            this.eventList.render();
+            console.log('Direct render completed');
 
             console.log('Calendar and event loading completed');
         } catch (error) {

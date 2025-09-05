@@ -40,12 +40,19 @@ export class EventList {
      * @param {Object} event - Calendar event object
      */
     addEvent(event) {
-        if (!event || !event.summary) return;
+        if (!event || !event.summary) {
+            console.log('Skipping event - no event or summary:', event);
+            return;
+        }
         
+        console.log('Checking event pattern for:', event.summary);
         // Only add Eventinator events (matching the emoji pattern)
         if (EVENT_PATTERN.test(event.summary)) {
+            console.log('Event matches pattern, adding:', event.summary);
             this.events.push(event);
             this.updateFiltered();
+        } else {
+            console.log('Event does not match pattern, skipping:', event.summary);
         }
     }
 
@@ -179,9 +186,14 @@ export class EventList {
      * Render the event list into the DOM
      */
     render() {
+        console.log('EventList render() called');
+        console.log('Events to render:', this.events.length);
+        console.log('Filtered events:', this.filteredEvents.length);
+        
         this.parentElement.innerHTML = '';
         
         if (this.filteredEvents.length === 0) {
+            console.log('No filtered events, showing empty state');
             this.renderEmptyState();
             return;
         }
